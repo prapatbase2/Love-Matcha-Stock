@@ -1,0 +1,1272 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#2e7d58" />
+  <title>Love Matcha Stock</title>
+  <link rel="preconnect" href="https://www.gstatic.com" />
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+  <style>
+    :root {
+      --brand: #2e7d58;
+      --brand-2: #e8f5ed;
+      --ink: #17211b;
+      --muted: #66756d;
+      --line: #dce6df;
+      --danger: #ba1a1a;
+      --warn: #9a5b00;
+      --ok: #217a36;
+      --bg: #f7faf8;
+      --card: #ffffff;
+      --font-scale: 1;
+      --radius: 18px;
+      --shadow: 0 12px 30px rgba(20, 62, 40, .10);
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; min-height: 100%; background: var(--bg); color: var(--ink); font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Thai", sans-serif; font-size: calc(18px * var(--font-scale)); }
+    body { padding-bottom: env(safe-area-inset-bottom); }
+    button, input, select, textarea { font: inherit; }
+    button { cursor: pointer; border: 0; }
+    .hidden { display: none !important; }
+    .app-shell { max-width: 1180px; margin: 0 auto; padding: 14px; }
+    .topbar { position: sticky; top: 0; z-index: 50; background: rgba(247,250,248,.94); backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }
+    .topbar-inner { max-width: 1180px; margin: 0 auto; padding: 12px 14px; display: flex; align-items: center; gap: 12px; }
+    .logo-wrap { width: 52px; height: 52px; border-radius: 16px; background: var(--brand-2); display: grid; place-items: center; overflow: hidden; flex: 0 0 auto; border: 1px solid var(--line); }
+    .logo-wrap img { width: 100%; height: 100%; object-fit: cover; }
+    .logo-mark { color: var(--brand); font-weight: 900; font-size: 24px; }
+    .title-area { min-width: 0; flex: 1; }
+    .shop-title { font-weight: 900; font-size: 1.2rem; line-height: 1.05; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .subtitle { color: var(--muted); font-size: .88rem; margin-top: 2px; }
+    .status-pill { display: inline-flex; align-items: center; gap: 6px; padding: 8px 10px; border-radius: 999px; background: #fff; border: 1px solid var(--line); font-size: .82rem; white-space: nowrap; }
+    .dot { width: 10px; height: 10px; border-radius: 999px; background: var(--warn); box-shadow: 0 0 0 4px rgba(154,91,0,.1); }
+    .dot.online { background: var(--ok); box-shadow: 0 0 0 4px rgba(33,122,54,.12); }
+    .nav { max-width: 1180px; margin: 0 auto; padding: 0 14px 12px; display: grid; grid-auto-flow: column; grid-auto-columns: max-content; gap: 8px; overflow-x: auto; scrollbar-width: none; }
+    .nav::-webkit-scrollbar { display:none; }
+    .tab-btn { border-radius: 999px; padding: 11px 14px; background: #fff; color: var(--ink); border: 1px solid var(--line); font-weight: 800; white-space: nowrap; }
+    .tab-btn.active { background: var(--brand); color: #fff; border-color: var(--brand); }
+    .card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 16px; margin: 12px 0; }
+    .soft-card { background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 14px; }
+    h1,h2,h3 { margin: 0 0 10px; line-height: 1.2; }
+    h1 { font-size: 1.55rem; } h2 { font-size: 1.25rem; } h3 { font-size: 1.05rem; }
+    .muted { color: var(--muted); }
+    .small { font-size: .86rem; }
+    .grid { display: grid; gap: 12px; }
+    .grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .grid-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    @media (max-width: 760px) { .grid-2,.grid-3,.grid-4 { grid-template-columns: 1fr; } .topbar-inner { gap: 8px; } .status-pill span.txt { display:none; } }
+    .field { display: grid; gap: 6px; }
+    label { font-weight: 800; }
+    input, select, textarea { width: 100%; border: 1px solid #cbd9d1; border-radius: 14px; padding: 13px 14px; background: #fff; color: var(--ink); min-height: 50px; outline: none; }
+    textarea { min-height: 86px; resize: vertical; }
+    input:focus, select:focus, textarea:focus { border-color: var(--brand); box-shadow: 0 0 0 4px color-mix(in srgb, var(--brand) 14%, transparent); }
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 50px; padding: 12px 16px; border-radius: 14px; background: var(--brand); color: #fff; font-weight: 900; text-decoration: none; }
+    .btn.secondary { background: #fff; color: var(--ink); border: 1px solid var(--line); }
+    .btn.warn { background: #fb8c00; }
+    .btn.danger { background: var(--danger); }
+    .btn.ghost { background: transparent; color: var(--brand); border: 1px solid var(--brand); }
+    .btn.full { width: 100%; }
+    .btn-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+    .kpi { display: grid; gap: 4px; padding: 14px; border-radius: 16px; background: #fff; border: 1px solid var(--line); }
+    .kpi .num { font-size: 1.5rem; font-weight: 950; color: var(--brand); }
+    .kpi .lbl { color: var(--muted); font-weight: 700; }
+    .branch-tabs { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 6px; }
+    .chip { display:inline-flex; align-items:center; gap:6px; padding: 8px 11px; border-radius: 999px; border: 1px solid var(--line); background: #fff; font-weight: 800; white-space: nowrap; }
+    .chip.active { background: var(--brand-2); color: var(--brand); border-color: var(--brand); }
+    .stock-card { border: 1px solid var(--line); border-radius: 16px; padding: 14px; background: #fff; display:grid; gap:10px; }
+    .stock-head { display:flex; align-items:flex-start; justify-content:space-between; gap: 10px; }
+    .stock-title { font-weight: 950; font-size: 1.05rem; }
+    .size-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+    .size-box { border-radius: 14px; background: var(--bg); border: 1px solid var(--line); padding: 10px 8px; text-align: center; }
+    .size-box.low { background: #fff6e4; border-color: #ffc36a; }
+    .size-box.bad { background: #ffeceb; border-color: #ffb7b3; }
+    .size-box .s { color: var(--muted); font-size: .78rem; font-weight: 800; }
+    .size-box .q { font-weight: 950; font-size: 1.25rem; }
+    .table-wrap { overflow-x: auto; border-radius: 16px; border: 1px solid var(--line); background: #fff; }
+    table { width: 100%; border-collapse: collapse; min-width: 820px; }
+    th, td { padding: 11px 10px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th { background: var(--brand-2); color: var(--ink); font-weight: 950; position: sticky; top: 0; z-index: 1; }
+    .right { text-align:right; } .center { text-align:center; }
+    .role-badge { border-radius:999px; padding:5px 9px; font-size:.8rem; font-weight:900; display:inline-block; background:var(--brand-2); color:var(--brand); }
+    .toast { position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%); z-index: 100; max-width: min(92vw, 620px); background: #17211b; color: #fff; padding: 12px 16px; border-radius: 999px; box-shadow: var(--shadow); font-weight: 800; opacity: 0; pointer-events: none; transition: .18s ease; }
+    .toast.show { opacity: 1; }
+    .login-bg { min-height: 100vh; display:grid; place-items:center; padding: 18px; background: radial-gradient(circle at top left, var(--brand-2), transparent 38%), var(--bg); }
+    .login-card { max-width: 520px; width:100%; }
+    .login-logo { width: 88px; height:88px; border-radius: 28px; margin: 0 auto 12px; background: var(--brand-2); display:grid; place-items:center; color: var(--brand); font-size: 42px; font-weight:950; overflow:hidden; border:1px solid var(--line); }
+    .login-logo img { width:100%; height:100%; object-fit:cover; }
+    .two-actions { display:grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    @media(max-width:520px) { .two-actions { grid-template-columns: 1fr; } .size-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    .notice { border-left: 6px solid var(--brand); background: var(--brand-2); padding: 12px; border-radius: 14px; }
+    .danger-text { color: var(--danger); font-weight:900; }
+    .ok-text { color: var(--ok); font-weight:900; }
+    .warn-text { color: var(--warn); font-weight:900; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .86rem; }
+  </style>
+</head>
+<body>
+  <div id="loginView" class="login-bg">
+    <div class="card login-card">
+      <div id="loginLogo" class="login-logo">LM</div>
+      <h1 class="center">Love Matcha Stock</h1>
+      <p class="center muted">ระบบจดเข้า-ออกสต๊อกมัทฉะ ใช้ง่ายบนมือถือ</p>
+      <div class="grid">
+        <div class="field">
+          <label for="loginUser">ผู้ใช้งาน</label>
+          <select id="loginUser"></select>
+        </div>
+        <div class="field">
+          <label for="loginPin">PIN</label>
+          <input id="loginPin" type="password" inputmode="numeric" maxlength="4" pattern="[0-9]{4}" autocomplete="current-password" placeholder="กรอก PIN 4 ตัว" />
+        </div>
+        <label class="chip" style="justify-content:flex-start"><input id="rememberLogin" type="checkbox" style="width:auto;min-height:0"> จำการเข้าใช้งานเครื่องนี้</label>
+        <button id="loginBtn" class="btn full">เข้าสู่ระบบ</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="appView" class="hidden">
+    <header class="topbar">
+      <div class="topbar-inner">
+        <div id="appLogo" class="logo-wrap"><span class="logo-mark">LM</span></div>
+        <div class="title-area">
+          <div id="shopTitle" class="shop-title">Love Matcha Stock</div>
+          <div id="userLine" class="subtitle"></div>
+        </div>
+        <div id="connectionStatus" class="status-pill"><span class="dot"></span><span class="txt">กำลังโหลด</span></div>
+      </div>
+      <nav id="mainNav" class="nav"></nav>
+    </header>
+    <main class="app-shell">
+      <section id="page-dashboard"></section>
+      <section id="page-transaction" class="hidden"></section>
+      <section id="page-history" class="hidden"></section>
+      <section id="page-audit" class="hidden"></section>
+      <section id="page-products" class="hidden"></section>
+      <section id="page-users" class="hidden"></section>
+      <section id="page-backup" class="hidden"></section>
+      <section id="page-settings" class="hidden"></section>
+    </main>
+  </div>
+
+  <dialog id="configDialog" style="border:0;border-radius:18px;max-width:min(92vw,740px);padding:0;box-shadow:var(--shadow)">
+    <div class="card" style="margin:0;box-shadow:none">
+      <h2>ตั้งค่า Firebase เพื่อ realtime ทุกเครื่อง</h2>
+      <p class="muted">วาง config ที่ได้จาก Firebase Project Settings → Your apps → Web app รูปแบบประมาณ <span class="mono">apiKey, authDomain, projectId...</span></p>
+      <textarea id="firebaseConfigText" class="mono" placeholder='{"apiKey":"...","authDomain":"...","projectId":"...","storageBucket":"...","messagingSenderId":"...","appId":"..."}'></textarea>
+      <div class="btn-row" style="margin-top:12px">
+        <button id="saveFirebaseConfigBtn" class="btn">บันทึก config</button>
+        <button id="clearFirebaseConfigBtn" class="btn danger">ลบ config</button>
+        <button id="closeConfigBtn" class="btn secondary">ปิด</button>
+      </div>
+      <p class="small muted">หลังบันทึก ระบบจะโหลดหน้าใหม่เพื่อเชื่อม Firebase</p>
+    </div>
+  </dialog>
+
+  <div id="toast" class="toast"></div>
+
+<script>
+'use strict';
+
+const APP_VERSION = 'LoveMatchaStock-v1.6.0';
+const BASE_PATH = 'loveMatchaStock/v1';
+const DEFAULT_BRANCHES = ["หนองคาย", "อุดรธานี", "ศรีราชา", "นครพนม", "ออกบูธ"];
+const DEFAULT_PRODUCTS = ["Kagoshima Midori", "Tsuki", "Umeji", "Okumidori kago", "Hinoka", "Uji", "Hikari", "Takumi", "Asahi", "Okumidori Uji", "Yame1", "Yame2", "Yame Ceremonial", "ชาออกบูธ", "Roast Light", "Roast Medium", "Roast Dark", "Culinary Grade"];
+const DEFAULT_SIZES = [40, 100, 500, 1000];
+const INITIAL_STOCK = {"หนองคาย": {"Kagoshima Midori": {"40": 0, "100": 0, "500": 0, "1000": 27}, "Tsuki": {"40": 14, "100": 0, "500": 0, "1000": 31}, "Umeji": {"40": 8, "100": 0, "500": 0, "1000": 1}, "Okumidori kago": {"40": 0, "100": 0, "500": 22, "1000": 0}, "Hinoka": {"40": 1, "100": 2, "500": 0, "1000": 22}, "Uji": {"40": 7, "100": 0, "500": 0, "1000": 31}, "Hikari": {"40": 24, "100": 0, "500": 0, "1000": 7}, "Takumi": {"40": 12, "100": 0, "500": 0, "1000": 16}, "Asahi": {"40": 10, "100": 0, "500": 0, "1000": 18}, "Okumidori Uji": {"40": 0, "100": 8, "500": 0, "1000": 0}, "Yame1": {"40": 6, "100": 0, "500": 0, "1000": 8}, "Yame2": {"40": 5, "100": 0, "500": 0, "1000": 11}, "Yame Ceremonial": {"40": 11, "100": 0, "500": 0, "1000": 18}, "ชาออกบูธ": {"40": 0, "100": 0, "500": 22, "1000": 0}, "Roast Light": {"40": 0, "100": 0, "500": 0, "1000": 3}, "Roast Medium": {"40": 0, "100": 0, "500": 0, "1000": 3}, "Roast Dark": {"40": 0, "100": 0, "500": 0, "1000": 3}, "Culinary Grade": {"40": 0, "100": 0, "500": 0, "1000": 41}}, "อุดรธานี": {"Kagoshima Midori": {"40": 7, "100": 6, "500": 0, "1000": 0}, "Tsuki": {"40": 4, "100": 3, "500": 0, "1000": 0}, "Umeji": {"40": 2, "100": 0, "500": 0, "1000": 0}, "Okumidori kago": {"40": 4, "100": 0, "500": 0, "1000": 0}, "Hinoka": {"40": 2, "100": 2, "500": 0, "1000": 0}, "Uji": {"40": 3, "100": 4, "500": 0, "1000": 0}, "Hikari": {"40": 4, "100": 0, "500": 0, "1000": 0}, "Takumi": {"40": 2, "100": 1, "500": 0, "1000": 0}, "Asahi": {"40": 3, "100": 0, "500": 0, "1000": 0}, "Okumidori Uji": {"40": 0, "100": 0, "500": 0, "1000": 0}, "Yame1": {"40": 1, "100": 0, "500": 0, "1000": 0}, "Yame2": {"40": 1, "100": 0, "500": 0, "1000": 0}, "Yame Ceremonial": {"40": 4, "100": 0, "500": 0, "1000": 0}, "ชาออกบูธ": {"40": 0, "100": 0, "500": 0, "1000": 0}, "Roast Light": {"40": 0, "100": 0, "500": 0, "1000": 0}, "Roast Medium": {"40": 0, "100": 0, "500": 0, "1000": 0}, "Roast Dark": {"40": 0, "100": 0, "500": 0, "1000": 0}, "Culinary Grade": {"40": 0, "100": 0, "500": -1, "1000": 0}}, "ศรีราชา": {"Kagoshima Midori": {"40": 1, "100": 1, "500": 0, "1000": 0}, "Tsuki": {"40": 2, "100": 1, "500": 0, "1000": 0}, "Umeji": {"40": 3, "100": 0, "500": 0, "1000": 0}, "Okumidori kago": {"40": 1, "100": 3, "500": 0, "1000": 0}, "Hinoka": {"40": 0, "100": 2, "500": 0, "1000": 0}, "Uji": {"40": 0, "100": 0, "500": 0, "1000": 0}, "Hikari": {"40": 2, "100": 2, "500": 0, "1000": 0}, "Takumi": {"40": 1, "100": 0, "500": 0, "1000": 0}, "Asahi": {"40": 2, "100": 0, "500": 0, "1000": 0}, "Okumidori Uji": {"40": 0, "100": 0, "500": 0, "1000": 0}, "Yame1": {"40": 1, "100": 0, "500": 0, "1000": 0}, "Yame2": {"40": 2, "100": 0, "500": 0, "1000": 0}, "Yame Ceremonial": {"40": 1, "100": 0, "500": 0, "1000": 0}, "ชาออกบูธ": {"40": 0, "100": 0, "500": 0, "1000": 0}, "Roast Light": {"40": 0, "100": 0, "500": 0, "1000": 0}, "Roast Medium": {"40": 0, "100": 0, "500": 0, "1000": 0}, "Roast Dark": {"40": 0, "100": 0, "500": 0, "1000": 0}, "Culinary Grade": {"40": 0, "100": 0, "500": 0, "1000": 0}}, "นครพนม": {"Kagoshima Midori": {"40": 6, "100": 0, "500": 0, "1000": 1}, "Tsuki": {"40": 1, "100": 2, "500": 0, "1000": 1}, "Umeji": {"40": 5, "100": 0, "500": 0, "1000": 0}, "Okumidori kago": {"40": 5, "100": 0, "500": 1, "1000": 0}, "Hinoka": {"40": 5, "100": 1, "500": 0, "1000": 1}, "Uji": {"40": 3, "100": 1, "500": 0, "1000": 2}, "Hikari": {"40": 6, "100": 0, "500": 0, "1000": 0}, "Takumi": {"40": 4, "100": 0, "500": 1, "1000": 0}, "Asahi": {"40": 5, "100": 0, "500": 0, "1000": 0}, "Okumidori Uji": {"40": 0, "100": 1, "500": -1, "1000": 0}, "Yame1": {"40": 4, "100": 2, "500": 0, "1000": 1}, "Yame2": {"40": 5, "100": 2, "500": 1, "1000": 0}, "Yame Ceremonial": {"40": 5, "100": 0, "500": 0, "1000": 1}, "ชาออกบูธ": {"40": 0, "100": 0, "500": 0, "1000": 0}, "Roast Light": {"40": 0, "100": 0, "500": 0, "1000": 0}, "Roast Medium": {"40": 0, "100": 0, "500": 0, "1000": 0}, "Roast Dark": {"40": 0, "100": 0, "500": 0, "1000": 0}, "Culinary Grade": {"40": 0, "100": 0, "500": 0, "1000": 0}}, "ออกบูธ": {"Kagoshima Midori": {"40": 3, "100": 0, "500": 0, "1000": 0}, "Tsuki": {"40": 7, "100": 2, "500": 0, "1000": 0}, "Umeji": {"40": 23, "100": 0, "500": 0, "1000": 0}, "Okumidori kago": {"40": 17, "100": 1, "500": 0, "1000": 0}, "Hinoka": {"40": 7, "100": 0, "500": 0, "1000": 0}, "Uji": {"40": 14, "100": 0, "500": 0, "1000": 0}, "Hikari": {"40": 4, "100": 5, "500": 0, "1000": 0}, "Takumi": {"40": 9, "100": 0, "500": 0, "1000": 0}, "Asahi": {"40": 16, "100": 0, "500": 0, "1000": 0}, "Okumidori Uji": {"40": 0, "100": 1, "500": 0, "1000": 0}, "Yame1": {"40": 10, "100": 1, "500": 0, "1000": 0}, "Yame2": {"40": 16, "100": 0, "500": 0, "1000": 0}, "Yame Ceremonial": {"40": 18, "100": 2, "500": 0, "1000": 0}, "ชาออกบูธ": {"40": 0, "100": 0, "500": 1, "1000": 0}, "Roast Light": {"40": 0, "100": 0, "500": 0, "1000": 0}, "Roast Medium": {"40": 0, "100": 0, "500": 0, "1000": 0}, "Roast Dark": {"40": 0, "100": 0, "500": 0, "1000": 0}, "Culinary Grade": {"40": 0, "100": 0, "500": 0, "1000": 0}}};
+const EMBEDDED_FIREBASE_CONFIG = {
+  // วาง Firebase config ถาวรตรงนี้ได้ หลังจากนั้นไม่ต้องตั้งค่าหน้าเว็บอีก
+  // apiKey: "",
+  // authDomain: "",
+  // projectId: "",
+  // storageBucket: "",
+  // messagingSenderId: "",
+  // appId: ""
+};
+
+const $ = (id) => document.getElementById(id);
+const byId = (list, id) => list.find(x => x.id === id);
+const nowIso = () => new Date().toISOString();
+const todayInput = () => new Date(Date.now() - new Date().getTimezoneOffset()*60000).toISOString().slice(0,10);
+const moneyDate = (v) => v ? new Date(v).toLocaleString('th-TH-u-ca-buddhist', { dateStyle:'medium', timeStyle:'short', timeZone:'Asia/Bangkok' }) : '-';
+function dateOnlyBE(v) {
+  if(!v) return '-';
+  if(/^\d{4}-\d{2}-\d{2}$/.test(String(v))) {
+    const [y,m,d] = String(v).split('-').map(Number);
+    return `${String(d).padStart(2,'0')}/${String(m).padStart(2,'0')}/${y+543}`;
+  }
+  const d = new Date(v);
+  return Number.isNaN(d.getTime()) ? safe(v) : d.toLocaleDateString('th-TH-u-ca-buddhist', {day:'2-digit', month:'2-digit', year:'numeric', timeZone:'Asia/Bangkok'});
+}
+const safe = (s) => String(s ?? '').replace(/[&<>"]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
+const makeId = (prefix='id') => prefix + '_' + Math.random().toString(36).slice(2,10) + '_' + Date.now().toString(36);
+const productIdFromName = (name) => 'p_' + String(name).trim().toLowerCase().replace(/[^a-z0-9ก-๙]+/gi,'_').replace(/^_+|_+$/g,'').slice(0,60);
+const stockDocId = (branch, productId, size) => [branch, productId, size].join('__').replace(/[\/\.#$\[\]]/g,'_');
+
+
+function normalizeSizes(list) {
+  const arr = (Array.isArray(list) ? list : String(list || '').split(/[,\s]+/))
+    .map(x => Number(String(x).replace(/[^0-9.]/g,'')))
+    .filter(x => Number.isFinite(x) && x > 0)
+    .map(x => Math.round(x));
+  return [...new Set(arr)].sort((a,b)=>a-b);
+}
+function sizesForProduct(p) {
+  const sizes = normalizeSizes(p?.sizes);
+  return sizes.length ? sizes : [...DEFAULT_SIZES];
+}
+function sizesText(p) { return sizesForProduct(p).map(s => `${s}gm`).join(', '); }
+function defaultAlerts(sizes = DEFAULT_SIZES) { return Object.fromEntries(normalizeSizes(sizes).map(s => [String(s), 0])); }
+function alertsForProduct(p) {
+  const sizes = sizesForProduct(p);
+  const out = defaultAlerts(sizes);
+  const src = (p && typeof p.alerts === 'object' && p.alerts) ? p.alerts : {};
+  for (const size of sizes) out[String(size)] = Math.max(0, Number(src[String(size)] ?? src[size] ?? 0) || 0);
+  return out;
+}
+function thresholdFor(p, size) {
+  const alerts = alertsForProduct(p);
+  return Math.max(0, Number(alerts[String(size)] ?? 0) || 0);
+}
+function isLowStock(p, qty, size) {
+  const threshold = thresholdFor(p, size);
+  return threshold > 0 && Number(qty) <= threshold;
+}
+function alertSummary(p) {
+  const alerts = alertsForProduct(p);
+  const enabled = sizesForProduct(p).filter(size => Number(alerts[String(size)] || 0) > 0).map(size => `${size}gm ≤ ${Number(alerts[String(size)]).toLocaleString('th-TH')}`);
+  return enabled.length ? enabled.join(' • ') : 'ปิดระบบเตือนอยู่ (0 ทุกขนาด)';
+}
+function alertInputId(productId, size) { return `alert_${productId}_${size}`.replace(/[^a-zA-Z0-9_\-ก-๙]/g, '_'); }
+function validateFourDigitPin(pin) { return /^\d{4}$/.test(String(pin || '')); }
+function backupMode() { return state.settings.autoBackupMode || (state.settings.autoBackup ? 'interval' : 'off'); }
+function isBackupIntervalMode() { return ['interval','both'].includes(backupMode()); }
+function isBackupOnTransactionMode() { return ['transaction','both'].includes(backupMode()); }
+function maybeBackupAfterTransaction() {
+  dirtySinceBackup = true;
+  if (isBackupOnTransactionMode() && state.settings.driveWebhookUrl) setTimeout(() => sendDriveBackup(), useLocal ? 300 : 1500);
+}
+
+let firebaseReady = false;
+let db = null;
+let auth = null;
+let useLocal = false;
+let unsubscribers = [];
+let currentUser = null;
+let activePage = 'dashboard';
+let dashboardBranch = 'รวมทุกสาขา';
+let localSaveTimer = null;
+let backupTimer = null;
+let renderTimer = null;
+let dirtySinceBackup = false;
+
+let state = {
+  users: [], products: [], stock: [], history: [], settings: defaultSettings(), loaded: false
+};
+
+function defaultSettings() {
+  return {
+    id: 'main', initialized: false,
+    shopName: 'Love Matcha Stock',
+    brandColor: '#2e7d58',
+    fontScale: 1.05,
+    logoDataUrl: '',
+    branches: DEFAULT_BRANCHES,
+    lowStockDefault: 0,
+    driveWebhookUrl: '',
+    autoBackup: false,
+    autoBackupMode: 'off',
+    autoBackupMinutes: 30,
+    lastBackupAt: '',
+    updatedAt: nowIso()
+  };
+}
+
+function createSeedData() {
+  const products = DEFAULT_PRODUCTS.map((name, idx) => ({
+    id: productIdFromName(name), name, sizes: DEFAULT_SIZES, alert: 0, alerts: defaultAlerts(), active: true, order: idx + 1, createdAt: nowIso()
+  }));
+  const users = [{ id:'owner', name:'เจ้าของ', role:'owner', branch:'ทุกสาขา', pin:'9999', active:true, createdAt: nowIso() }];
+  const stock = [];
+  for (const branch of DEFAULT_BRANCHES) {
+    for (const p of products) {
+      for (const size of DEFAULT_SIZES) {
+        const qty = Number(INITIAL_STOCK?.[branch]?.[p.name]?.[String(size)] ?? 0);
+        stock.push({ id: stockDocId(branch, p.id, size), branch, productId: p.id, productName: p.name, size: Number(size), qty, updatedAt: nowIso() });
+      }
+    }
+  }
+  return { users, products, stock, history: [], settings: {...defaultSettings(), initialized:true} };
+}
+
+function toast(msg) {
+  const el = $('toast'); el.textContent = msg; el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2600);
+}
+
+function setCssSettings() {
+  const s = state.settings || defaultSettings();
+  document.documentElement.style.setProperty('--brand', s.brandColor || '#2e7d58');
+  document.documentElement.style.setProperty('--font-scale', String(s.fontScale || 1));
+  const title = s.shopName || 'Love Matcha Stock';
+  document.title = title;
+  $('shopTitle').textContent = title;
+  const logoHtml = s.logoDataUrl ? `<img src="${s.logoDataUrl}" alt="logo">` : '<span class="logo-mark">LM</span>';
+  $('appLogo').innerHTML = logoHtml;
+  $('loginLogo').innerHTML = s.logoDataUrl ? `<img src="${s.logoDataUrl}" alt="logo">` : 'LM';
+}
+
+function roleThai(role) { return role === 'owner' ? 'เจ้าของ' : role === 'manager' ? 'ผู้จัดการ' : 'พนักงาน'; }
+function canManageProducts() { return currentUser && ['owner','manager'].includes(currentUser.role); }
+function canManageUsers() { return currentUser && ['owner','manager'].includes(currentUser.role); }
+function canOwner() { return currentUser && currentUser.role === 'owner'; }
+function canViewFullHistory() { return !!currentUser; }
+function roleValueOptions(values, selected) {
+  const labels = { owner:'เจ้าของ', manager:'ผู้จัดการ', staff:'พนักงาน' };
+  return values.map(v => `<option value="${v}" ${v===selected?'selected':''}>${labels[v]||v}</option>`).join('');
+}
+function canEditUserRole(targetUser) {
+  if(!currentUser || !targetUser || targetUser.id === currentUser.id) return false;
+  if(currentUser.role === 'owner') return true;
+  if(currentUser.role === 'manager') return ['manager','staff'].includes(targetUser.role);
+  return false;
+}
+function allowedRolesForTarget(targetUser) {
+  if(!canEditUserRole(targetUser)) return [];
+  if(currentUser.role === 'owner') return ['owner','manager','staff'];
+  if(currentUser.role === 'manager') return ['manager','staff'];
+  return [];
+}
+function canToggleUserStatus(targetUser) {
+  if(!currentUser || !targetUser || targetUser.id === currentUser.id) return false;
+  if(currentUser.role === 'owner') return targetUser.role !== 'owner';
+  if(currentUser.role === 'manager') return targetUser.role === 'staff';
+  return false;
+}
+function canDeleteUser(targetUser) {
+  if(!currentUser || !targetUser || targetUser.id === currentUser.id) return false;
+  if(currentUser.role === 'owner') return ['manager','staff'].includes(targetUser.role);
+  if(currentUser.role === 'manager') return targetUser.role === 'staff';
+  return false;
+}
+
+function getFirebaseConfig() {
+  const local = localStorage.getItem('loveMatcha.firebaseConfig');
+  if (local) { try { return JSON.parse(local); } catch(e) {} }
+  return EMBEDDED_FIREBASE_CONFIG;
+}
+function hasConfig(cfg) { return cfg && cfg.apiKey && cfg.projectId && cfg.appId; }
+
+async function boot() {
+  showConnection(false, 'กำลังโหลด');
+  const cfg = getFirebaseConfig();
+  const fbBox = $('firebaseSetupBox'); if (fbBox) fbBox.classList.toggle('hidden', hasConfig(cfg));
+  try {
+    if (hasConfig(cfg) && window.firebase) {
+      firebase.initializeApp(cfg);
+      auth = firebase.auth();
+      db = firebase.firestore();
+      await auth.signInAnonymously();
+      firebaseReady = true;
+      useLocal = false;
+      await ensureSeedFirestore();
+      attachFirestoreListeners();
+      showConnection(true, 'Realtime');
+    } else {
+      useLocal = true;
+      loadLocalState();
+      showConnection(false, 'เครื่องนี้');
+      state.loaded = true;
+      afterStateReady();
+    }
+  } catch (err) {
+    console.error(err);
+    useLocal = true;
+    loadLocalState();
+    showConnection(false, 'โหมดเครื่องนี้');
+    const fbBox = $('firebaseSetupBox'); if (fbBox) fbBox.classList.remove('hidden');
+    toast('เชื่อม Firebase ไม่สำเร็จ ใช้โหมดเครื่องนี้ก่อน');
+    state.loaded = true;
+    afterStateReady();
+  }
+}
+
+function showConnection(online, text) {
+  const el = $('connectionStatus');
+  if (!el) return;
+  el.innerHTML = `<span class="dot ${online ? 'online' : ''}"></span><span class="txt">${safe(text)}</span>`;
+}
+
+function loadLocalState() {
+  const raw = localStorage.getItem('loveMatcha.localState');
+  if (raw) {
+    try { state = {...state, ...JSON.parse(raw)}; return; } catch(e) {}
+  }
+  const seed = createSeedData();
+  state = {...seed, loaded:true};
+  saveLocalNow();
+}
+function saveLocalDebounced() {
+  if (!useLocal) return;
+  clearTimeout(localSaveTimer);
+  localSaveTimer = setTimeout(saveLocalNow, 250);
+}
+function saveLocalNow() {
+  localStorage.setItem('loveMatcha.localState', JSON.stringify({ users: state.users, products: state.products, stock: state.stock, history: state.history, settings: state.settings }));
+}
+
+async function ensureSeedFirestore() {
+  const settingRef = db.collection(`${BASE_PATH}/settings`).doc('main');
+  const snap = await settingRef.get();
+  if (snap.exists && snap.data()?.initialized) return;
+  const seed = createSeedData();
+  const batch = db.batch();
+  batch.set(settingRef, {...seed.settings, updatedAt: firebase.firestore.FieldValue.serverTimestamp()});
+  seed.users.forEach(u => batch.set(db.collection(`${BASE_PATH}/users`).doc(u.id), u));
+  seed.products.forEach(p => batch.set(db.collection(`${BASE_PATH}/products`).doc(p.id), p));
+  seed.stock.forEach(s => batch.set(db.collection(`${BASE_PATH}/stock`).doc(s.id), s));
+  batch.set(db.collection(`${BASE_PATH}/history`).doc(makeId('hist')), {
+    type:'seed', reason:'นำเข้ายอด Stock ปัจจุบันจาก Excel', note:'ค่าเริ่มต้นจากไฟล์ Stock Matcha', userId:'system', userName:'ระบบ', role:'system', branch:'ทุกสาขา', createdAt: firebase.firestore.FieldValue.serverTimestamp(), txDate: todayInput()
+  });
+  await batch.commit();
+}
+
+function attachFirestoreListeners() {
+  unsubscribers.forEach(fn => fn()); unsubscribers = [];
+  const listen = (path, cb) => unsubscribers.push(db.collection(path).onSnapshot(cb, err => { console.error(err); toast('อ่านข้อมูล realtime ไม่สำเร็จ'); }));
+  listen(`${BASE_PATH}/users`, snap => { state.users = snap.docs.map(d => ({id:d.id, ...d.data()})).sort((a,b)=>(a.role||'').localeCompare(b.role||'') || (a.name||'').localeCompare(b.name||'')); scheduleRender(); });
+  listen(`${BASE_PATH}/products`, snap => { state.products = snap.docs.map(d => ({id:d.id, ...d.data()})).sort((a,b)=>(a.order||0)-(b.order||0) || (a.name||'').localeCompare(b.name||'')); scheduleRender(); });
+  listen(`${BASE_PATH}/stock`, snap => { state.stock = snap.docs.map(d => ({id:d.id, ...d.data(), qty:Number(d.data().qty||0), size:Number(d.data().size||0)})); scheduleRender(); });
+  listen(`${BASE_PATH}/settings`, snap => { const doc = snap.docs.find(d => d.id === 'main'); if (doc) state.settings = {...defaultSettings(), ...doc.data(), id:'main'}; scheduleRender(); });
+  unsubscribers.push(db.collection(`${BASE_PATH}/history`).orderBy('createdAt','desc').limit(500).onSnapshot(snap => { state.history = snap.docs.map(d => ({id:d.id, ...d.data()})); scheduleRender(); }, err => { console.warn('history order fallback', err); db.collection(`${BASE_PATH}/history`).limit(500).onSnapshot(s => { state.history = s.docs.map(d => ({id:d.id, ...d.data()})); scheduleRender(); }); }));
+  state.loaded = true;
+  setTimeout(afterStateReady, 400);
+}
+
+function scheduleRender() {
+  clearTimeout(renderTimer);
+  renderTimer = setTimeout(() => {
+    state.loaded = true;
+    setCssSettings();
+    renderLoginUsers();
+    if (currentUser) {
+      currentUser = byId(state.users, currentUser.id) || currentUser;
+      renderApp();
+    }
+    dirtySinceBackup = true;
+  }, 100);
+}
+function afterStateReady() {
+  setCssSettings();
+  renderLoginUsers();
+  const session = JSON.parse(localStorage.getItem('loveMatcha.session') || 'null');
+  if (session?.userId && session?.remember) {
+    const u = byId(state.users, session.userId);
+    if (u?.active) { currentUser = u; showApp(); return; }
+  }
+  showLogin();
+}
+
+function showLogin() { $('loginView').classList.remove('hidden'); $('appView').classList.add('hidden'); renderLoginUsers(); }
+function showApp() { $('loginView').classList.add('hidden'); $('appView').classList.remove('hidden'); renderApp(); startAutoBackup(); }
+
+function renderLoginUsers() {
+  const sel = $('loginUser'); if (!sel) return;
+  const old = sel.value;
+  const users = state.users.filter(u => u.active !== false);
+  sel.innerHTML = users.map(u => `<option value="${u.id}">${safe(u.name)} — ${roleThai(u.role)}</option>`).join('');
+  if (old) sel.value = old;
+}
+
+function login() {
+  const uid = $('loginUser').value;
+  const pin = $('loginPin').value.trim();
+  const u = byId(state.users, uid);
+  const legacyOwnerOk = u?.id === 'owner' && String(u.pin) === '999999' && pin === '9999';
+  if (!validateFourDigitPin(pin)) { toast('PIN ต้องเป็นตัวเลข 4 ตัว'); return; }
+  if (!u || u.active === false || (String(u.pin) !== pin && !legacyOwnerOk)) { toast('ผู้ใช้หรือ PIN ไม่ถูกต้อง'); return; }
+  currentUser = {...u, pin: legacyOwnerOk ? '9999' : u.pin};
+  if (legacyOwnerOk) saveUser({...u, pin:'9999', updatedAt:nowIso()});
+  localStorage.setItem('loveMatcha.session', JSON.stringify({ userId: u.id, remember: $('rememberLogin').checked, at: nowIso() }));
+  $('loginPin').value = '';
+  showApp();
+}
+function logout() { currentUser = null; localStorage.removeItem('loveMatcha.session'); showLogin(); }
+
+function navItems() {
+  const items = [['dashboard','Stock รวม'], ['transaction','ลงรายการ']];
+  items.push(['history','ประวัติ']);
+  items.push(['audit','เช็คชาจริง']);
+  if (canManageProducts()) items.push(['products','รายการชา']);
+  items.push(['users', canManageUsers() ? 'ผู้ใช้' : 'บัญชี/PIN']);
+  if (canOwner()) items.push(['backup','สำรองข้อมูล'], ['settings','ตั้งค่า']);
+  return items;
+}
+function renderNav() {
+  const items = navItems();
+  if (!items.some(([id]) => id === activePage)) activePage = 'dashboard';
+  $('mainNav').innerHTML = items.map(([id,label]) => `<button class="tab-btn ${activePage===id?'active':''}" data-page="${id}">${label}</button>`).join('') + `<button class="tab-btn" id="logoutBtn">ออก</button>`;
+  document.querySelectorAll('[data-page]').forEach(btn => btn.onclick = () => { activePage = btn.dataset.page; renderApp(); });
+  $('logoutBtn').onclick = logout;
+}
+function renderApp() {
+  if (!currentUser) return;
+  setCssSettings();
+  $('userLine').innerHTML = `${safe(currentUser.name)} • <b>${roleThai(currentUser.role)}</b>${currentUser.branch && currentUser.branch !== 'ทุกสาขา' ? ' • ' + safe(currentUser.branch) : ''}`;
+  renderNav();
+  ['dashboard','transaction','history','audit','products','users','backup','settings'].forEach(p => $('page-'+p).classList.toggle('hidden', activePage !== p));
+  renderDashboard(); renderTransaction(); renderHistory(); renderAudit(); renderProducts(); renderUsers(); renderBackup(); renderSettings();
+}
+
+function activeProducts() { return state.products.filter(p => p.active !== false).sort((a,b)=>(a.order||0)-(b.order||0)); }
+function branches() { return state.settings?.branches?.length ? state.settings.branches : DEFAULT_BRANCHES; }
+function stockQty(branch, productId, size) { return Number(state.stock.find(s => s.branch===branch && s.productId===productId && Number(s.size)===Number(size))?.qty || 0); }
+function stockTotal(productId, size) { return branches().reduce((sum,b) => sum + stockQty(b, productId, size), 0); }
+function productName(productId) { return byId(state.products, productId)?.name || productId; }
+function dateFromFirestore(v) {
+  if (!v) return '';
+  if (typeof v.toDate === 'function') return v.toDate().toISOString();
+  if (typeof v === 'string') return v;
+  if (v.seconds) return new Date(v.seconds*1000).toISOString();
+  return String(v);
+}
+
+function renderDashboard() {
+  if (activePage !== 'dashboard') return;
+  const products = activeProducts();
+  const totalPacks = state.stock.reduce((a,s)=>a+Number(s.qty||0),0);
+  const totalGrams = state.stock.reduce((a,s)=>a+Number(s.qty||0)*Number(s.size||0),0);
+  const lowCount = state.stock.filter(s => { const p = byId(state.products, s.productId); return p && isLowStock(p, s.qty, s.size); }).length;
+  const negCount = state.stock.filter(s => Number(s.qty) < 0).length;
+  const branchChoices = ['รวมทุกสาขา', ...branches()];
+  const searchValue = sessionStorage.getItem('loveMatcha.dashboardSearch') || '';
+  $('page-dashboard').innerHTML = `
+    <div class="card">
+      <h1>Stock รวมทุกสาขา</h1>
+      <div class="grid grid-4">
+        <div class="kpi"><div class="num">${totalPacks.toLocaleString('th-TH')}</div><div class="lbl">แพ็ก/ถุงทั้งหมด</div></div>
+        <div class="kpi"><div class="num">${Math.round(totalGrams/1000).toLocaleString('th-TH')}</div><div class="lbl">กิโลกรัมโดยประมาณ</div></div>
+        <div class="kpi"><div class="num ${lowCount?'warn-text':''}">${lowCount}</div><div class="lbl">รายการใกล้หมด</div></div>
+        <div class="kpi"><div class="num ${negCount?'danger-text':''}">${negCount}</div><div class="lbl">รายการติดลบ</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="branch-tabs">${branchChoices.map(b => `<button class="chip ${dashboardBranch===b?'active':''}" data-branch="${safe(b)}">${safe(b)}</button>`).join('')}</div>
+      <div class="grid grid-2" style="margin-top:10px">
+        <div class="field"><label>ค้นหาชื่อชา</label><input id="dashboardSearch" value="${safe(searchValue)}" placeholder="เช่น Uji, Yame, Roast"></div>
+        <div class="field"><label>มุมมอง</label><select id="dashboardMode"><option value="all">แสดงทั้งหมด</option><option value="low">แสดงเฉพาะใกล้หมด/ติดลบ</option></select></div>
+      </div>
+      <div id="stockCards" class="grid grid-2" style="margin-top:12px"></div>
+    </div>`;
+  document.querySelectorAll('[data-branch]').forEach(btn => btn.onclick = () => { dashboardBranch = btn.dataset.branch; renderDashboard(); });
+  $('dashboardSearch').oninput = (e) => { sessionStorage.setItem('loveMatcha.dashboardSearch', e.target.value); renderStockCards(); };
+  $('dashboardMode').onchange = renderStockCards;
+  renderStockCards();
+}
+
+function renderStockCards() {
+  const el = $('stockCards'); if (!el) return;
+  const q = ($('dashboardSearch')?.value || '').trim().toLowerCase();
+  const mode = $('dashboardMode')?.value || 'all';
+  let products = activeProducts().filter(p => p.name.toLowerCase().includes(q));
+  if (mode === 'low') {
+    products = products.filter(p => sizesForProduct(p).some(size => {
+      const qty = dashboardBranch === 'รวมทุกสาขา' ? stockTotal(p.id, size) : stockQty(dashboardBranch, p.id, size);
+      return Number(qty) < 0 || isLowStock(p, qty, size);
+    }));
+  }
+  el.innerHTML = products.map(p => {
+    const sizes = (p.sizes || DEFAULT_SIZES).map(size => {
+      const qty = dashboardBranch === 'รวมทุกสาขา' ? stockTotal(p.id, size) : stockQty(dashboardBranch, p.id, size);
+      const cls = qty < 0 ? 'bad' : isLowStock(p, qty, size) ? 'low' : '';
+      return `<div class="size-box ${cls}"><div class="s">${size} gm</div><div class="q">${Number(qty).toLocaleString('th-TH')}</div></div>`;
+    }).join('');
+    return `<div class="stock-card"><div class="stock-head"><div><div class="stock-title">${safe(p.name)}</div><div class="small muted">แจ้งเตือน: ${safe(alertSummary(p))}</div></div></div><div class="size-grid">${sizes}</div></div>`;
+  }).join('') || '<div class="notice">ไม่พบรายการที่ค้นหา</div>';
+}
+
+function renderTransaction() {
+  if (activePage !== 'transaction') return;
+  const branchOptions = branches().map(b => `<option>${safe(b)}</option>`).join('');
+  const pOptions = activeProducts().map(p => `<option value="${p.id}">${safe(p.name)}</option>`).join('');
+  const defaultBranch = currentUser.branch && currentUser.branch !== 'ทุกสาขา' ? currentUser.branch : branches()[0];
+  $('page-transaction').innerHTML = `
+    <div class="card">
+      <h1>ลงรายการเข้า / ออก / นับใหม่</h1>
+      <p class="muted">ออกแบบให้กดง่ายบนมือถือ: เลือกสาขา → เลือกชา → เลือกขนาด → กรอกจำนวน → บันทึก</p>
+      <form id="txForm" class="grid">
+        <div class="grid grid-2">
+          <div class="field"><label>วันที่ทำรายการ</label><input id="txDate" type="date" value="${todayInput()}" required></div>
+          <div class="field"><label>สาขา</label><select id="txBranch">${branchOptions}</select></div>
+        </div>
+        <div class="grid grid-2">
+          <div class="field"><label>ประเภท</label><select id="txKind"><option value="add">เพิ่มชา</option><option value="remove">ลดชา</option><option value="count">นับใหม่</option></select></div>
+          <div class="field"><label>เหตุผล</label><select id="txReason"></select></div>
+        </div>
+        <div id="otherReasonBox" class="field hidden"><label>ระบุเหตุผลอื่นๆ</label><input id="txOtherReason" placeholder="เช่น ชาเสีย, ทดลองสูตร"></div>
+        <div class="grid grid-2">
+          <div class="field"><label>ชนิดมัทฉะ</label><select id="txProduct">${pOptions}</select></div>
+          <div class="field"><label>ขนาด</label><select id="txSize"></select></div>
+        </div>
+        <div class="grid grid-2">
+          <div class="field"><label id="qtyLabel">จำนวน</label><input id="txQty" type="number" min="0" step="1" inputmode="numeric" placeholder="เช่น 5" required></div>
+          <div class="field"><label>คงเหลือปัจจุบัน</label><input id="currentQty" disabled></div>
+        </div>
+        <div id="transferBox" class="grid grid-2 hidden">
+          <div class="field"><label>ส่งจากสาขา</label><input id="transferFrom" disabled></div>
+          <div class="field"><label>ส่งไปสาขา</label><select id="transferTo">${branchOptions}</select></div>
+        </div>
+        <div id="repackBox" class="notice hidden">
+          <b>รีแพคชาเพิ่ม</b><br>
+          ถ้ารีแพคจากถุงใหญ่ ให้ติ๊ก “ตัดจากขนาดต้นทางด้วย” เพื่อไม่ให้สต๊อกเกินจริง
+          <label class="chip" style="margin-top:8px"><input id="repackDeduct" type="checkbox" style="width:auto;min-height:0"> ตัดจากขนาดต้นทางด้วย</label>
+          <div id="repackDeductFields" class="grid grid-2 hidden" style="margin-top:8px">
+            <div class="field"><label>ขนาดต้นทาง</label><select id="repackSourceSize"></select></div>
+            <div class="field"><label>จำนวนที่ตัดจากต้นทาง</label><input id="repackSourceQty" type="number" min="0" step="1" inputmode="numeric" placeholder="เช่น 1"></div>
+          </div>
+        </div>
+        <div class="field"><label>หมายเหตุ / รายละเอียด</label><textarea id="txNote" placeholder="ใส่รายละเอียด เช่น เลขบิล, ส่งให้ใคร, เหตุผลการตัด stock"></textarea></div>
+        <button class="btn full" type="submit">บันทึกรายการ</button>
+      </form>
+    </div>`;
+  $('txBranch').value = defaultBranch;
+  const updateSizeOptions = () => {
+    const p = byId(state.products, $('txProduct').value);
+    const old = $('txSize').value;
+    const options = sizesForProduct(p).map(s=>`<option value="${s}">${s} gm</option>`).join('');
+    $('txSize').innerHTML = options;
+    if ([...$('txSize').options].some(o=>o.value===old)) $('txSize').value = old;
+    if ($('repackSourceSize')) {
+      $('repackSourceSize').innerHTML = options;
+      if ([...$('repackSourceSize').options].some(o=>o.value===old)) $('repackSourceSize').value = old;
+    }
+  };
+  const updateReason = () => {
+    const kind = $('txKind').value;
+    const reasons = kind === 'add' ? ['เติม stock','รีแพคชาเพิ่ม','อื่นๆ'] : kind === 'remove' ? ['ขาย','เติมหน้าร้าน','ส่งให้สาขาอื่น','ตัดstock','อื่นๆ'] : ['เช็ค Stock ซ้ำ','ผงมัทฉะหาย','นับใหม่อื่นๆ'];
+    $('txReason').innerHTML = reasons.map(r => `<option>${r}</option>`).join('');
+    $('qtyLabel').textContent = kind === 'count' ? 'จำนวนคงเหลือจริง' : 'จำนวนที่เข้า/ออก';
+    updateSpecialBoxes(); updateCurrentQty();
+  };
+  const updateSpecialBoxes = () => {
+    const r = $('txReason').value, kind = $('txKind').value;
+    $('otherReasonBox').classList.toggle('hidden', !r.includes('อื่น'));
+    $('transferBox').classList.toggle('hidden', !(kind==='remove' && r==='ส่งให้สาขาอื่น'));
+    $('repackBox').classList.toggle('hidden', !(kind==='add' && r==='รีแพคชาเพิ่ม'));
+    $('transferFrom').value = $('txBranch').value;
+    const to = $('transferTo'); if (to && to.value === $('txBranch').value) to.value = branches().find(b => b !== $('txBranch').value) || $('txBranch').value;
+  };
+  const updateCurrentQty = () => {
+    const qty = stockQty($('txBranch').value, $('txProduct').value, Number($('txSize').value));
+    $('currentQty').value = qty.toLocaleString('th-TH') + ' แพ็ก';
+    if ($('transferFrom')) $('transferFrom').value = $('txBranch').value;
+  };
+  $('txKind').onchange = updateReason;
+  $('txReason').onchange = updateSpecialBoxes;
+  $('txProduct').onchange = () => { updateSizeOptions(); updateSpecialBoxes(); updateCurrentQty(); };
+  ['txBranch','txSize'].forEach(id => $(id).onchange = () => { updateSpecialBoxes(); updateCurrentQty(); });
+  const repackDeduct = $('repackDeduct'); if (repackDeduct) repackDeduct.onchange = (e) => $('repackDeductFields').classList.toggle('hidden', !e.target.checked);
+  $('txForm').onsubmit = submitTransaction;
+  updateSizeOptions(); updateReason(); updateCurrentQty();
+}
+
+async function submitTransaction(e) {
+  e.preventDefault();
+  const branch = $('txBranch').value;
+  const kind = $('txKind').value;
+  let reason = $('txReason').value;
+  if (reason.includes('อื่น')) reason = $('txOtherReason').value.trim() || reason;
+  const productId = $('txProduct').value;
+  const size = Number($('txSize').value);
+  const qtyInput = Number($('txQty').value);
+  const txDate = $('txDate').value;
+  const note = $('txNote').value.trim();
+  if (!productId || !size || !txDate || qtyInput < 0 || Number.isNaN(qtyInput)) return toast('กรอกข้อมูลให้ครบก่อนบันทึก');
+  if (kind !== 'count' && qtyInput <= 0) return toast('จำนวนต้องมากกว่า 0');
+  const current = stockQty(branch, productId, size);
+  let delta = kind === 'add' ? qtyInput : kind === 'remove' ? -qtyInput : qtyInput - current;
+  const entries = [];
+  entries.push({ branch, productId, size, delta, qtyAfter: current + delta, kind, reason, note, txDate });
+  if (kind === 'remove' && $('txReason').value === 'ส่งให้สาขาอื่น') {
+    const toBranch = $('transferTo').value;
+    if (!toBranch || toBranch === branch) return toast('เลือกสาขาปลายทางให้ถูกต้อง');
+    const targetCurrent = stockQty(toBranch, productId, size);
+    entries[0].transferTo = toBranch;
+    entries.push({ branch: toBranch, productId, size, delta: qtyInput, qtyAfter: targetCurrent + qtyInput, kind:'add', reason:'รับจากสาขาอื่น', note:`รับจาก ${branch} / ${note}`, txDate, transferFrom: branch });
+  }
+  if (kind === 'add' && $('txReason').value === 'รีแพคชาเพิ่ม' && $('repackDeduct')?.checked) {
+    const sourceSize = Number($('repackSourceSize').value);
+    const sourceQty = Number($('repackSourceQty').value);
+    if (!sourceSize || sourceQty <= 0) return toast('กรอกขนาดและจำนวนต้นทางที่ต้องตัด');
+    const sourceCurrent = stockQty(branch, productId, sourceSize);
+    entries.push({ branch, productId, size: sourceSize, delta: -sourceQty, qtyAfter: sourceCurrent - sourceQty, kind:'remove', reason:'ตัดต้นทางจากการรีแพค', note:`รีแพคไปเป็น ${size}gm / ${note}`, txDate });
+  }
+  try {
+    await applyStockEntries(entries);
+    toast('บันทึกเรียบร้อย');
+    e.target.reset();
+    activePage = 'dashboard'; renderApp();
+  } catch(err) { console.error(err); toast('บันทึกไม่สำเร็จ'); }
+}
+
+async function applyStockEntries(entries) {
+  const userInfo = currentUser ? {userId:currentUser.id, userName:currentUser.name, role:currentUser.role} : {userId:'unknown', userName:'ไม่ระบุ', role:'unknown'};
+  if (useLocal) {
+    for (const en of entries) {
+      const id = stockDocId(en.branch, en.productId, en.size);
+      let s = state.stock.find(x => x.id === id);
+      if (!s) { s = {id, branch:en.branch, productId:en.productId, productName:productName(en.productId), size:en.size, qty:0}; state.stock.push(s); }
+      s.qty = Number(s.qty||0) + Number(en.delta||0); s.updatedAt = nowIso();
+      state.history.unshift({ id: makeId('hist'), ...en, ...userInfo, productName: productName(en.productId), createdAt: nowIso(), appVersion: APP_VERSION });
+    }
+    saveLocalDebounced(); maybeBackupAfterTransaction(); return;
+  }
+  const batch = db.batch();
+  for (const en of entries) {
+    const id = stockDocId(en.branch, en.productId, en.size);
+    const ref = db.collection(`${BASE_PATH}/stock`).doc(id);
+    batch.set(ref, { id, branch: en.branch, productId: en.productId, productName: productName(en.productId), size: Number(en.size), qty: firebase.firestore.FieldValue.increment(Number(en.delta)), updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, {merge:true});
+    const hRef = db.collection(`${BASE_PATH}/history`).doc(makeId('hist'));
+    batch.set(hRef, {...en, ...userInfo, productName: productName(en.productId), createdAt: firebase.firestore.FieldValue.serverTimestamp(), appVersion: APP_VERSION });
+  }
+  await batch.commit();
+  maybeBackupAfterTransaction();
+}
+
+
+function renderAudit() {
+  if (activePage !== 'audit') return;
+  const branchOptions = branches().map(b => `<option>${safe(b)}</option>`).join('');
+  const pOptions = activeProducts().map(p => `<option value="${p.id}">${safe(p.name)}</option>`).join('');
+  const defaultBranch = currentUser.branch && currentUser.branch !== 'ทุกสาขา' ? currentUser.branch : branches()[0];
+  $('page-audit').innerHTML = `
+    <div class="card">
+      <h1>เช็คชาจริงปลายเดือน</h1>
+      <p class="muted">ใช้ตอนนับของจริงในร้าน ระบบจะเทียบกับ Stock ในเว็บทันที แล้วบอกว่าตรง / ขาด / เกินเท่าไร</p>
+      <div class="notice">พนักงานใช้หน้านี้ได้ เพื่อช่วยจับกรณีลืมลง stock หรือกรอกผิด</div>
+      <form id="auditForm" class="grid" style="margin-top:12px">
+        <div class="grid grid-3">
+          <div class="field"><label>วันที่เช็ค</label><input id="auditDate" type="date" value="${todayInput()}" required></div>
+          <div class="field"><label>สาขา</label><select id="auditBranch">${branchOptions}</select></div>
+          <div class="field"><label>ชนิดมัทฉะ</label><select id="auditProduct">${pOptions}</select></div>
+        </div>
+        <div id="auditRows" class="grid"></div>
+        <label class="chip" style="justify-content:flex-start"><input id="auditAdjust" type="checkbox" style="width:auto;min-height:0"> ปรับยอด Stock ให้ตรงกับยอดจริงที่นับได้ด้วย</label>
+        <div class="field"><label>หมายเหตุ</label><textarea id="auditNote" placeholder="เช่น เช็คสิ้นเดือน, พบถุงแตก, ลืมลงขาย"></textarea></div>
+        <button class="btn full" type="submit">บันทึกผลเช็คชาจริง</button>
+      </form>
+    </div>`;
+  $('auditBranch').value = defaultBranch;
+  $('auditProduct').onchange = renderAuditRows;
+  $('auditBranch').onchange = renderAuditRows;
+  $('auditForm').onsubmit = saveAudit;
+  renderAuditRows();
+}
+function renderAuditRows() {
+  const box = $('auditRows'); if(!box) return;
+  const p = byId(state.products, $('auditProduct').value);
+  const branch = $('auditBranch').value;
+  box.innerHTML = `<div class="table-wrap"><table><thead><tr><th>ขนาด</th><th class="right">Stock ในระบบ</th><th>จำนวนที่นับจริง</th><th>ผลต่าง</th></tr></thead><tbody>${sizesForProduct(p).map(size => {
+    const sys = stockQty(branch, p.id, size);
+    return `<tr><td><b>${size} gm</b></td><td class="right">${sys.toLocaleString('th-TH')}</td><td><input class="auditActual" data-size="${size}" data-system="${sys}" type="number" min="0" step="1" inputmode="numeric" placeholder="กรอกยอดจริง"></td><td id="auditDiff_${size}" class="right muted">-</td></tr>`;
+  }).join('')}</tbody></table></div>`;
+  document.querySelectorAll('.auditActual').forEach(inp => inp.oninput = updateAuditDiffs);
+}
+function updateAuditDiffs() {
+  document.querySelectorAll('.auditActual').forEach(inp => {
+    const size = inp.dataset.size;
+    const sys = Number(inp.dataset.system || 0);
+    const val = inp.value === '' ? null : Number(inp.value);
+    const cell = $('auditDiff_'+size);
+    if(!cell) return;
+    if(val === null || Number.isNaN(val)) { cell.className = 'right muted'; cell.textContent = '-'; return; }
+    const diff = val - sys;
+    cell.className = 'right ' + (diff < 0 ? 'danger-text' : diff > 0 ? 'warn-text' : 'ok-text');
+    cell.textContent = diff === 0 ? 'ตรง' : (diff > 0 ? `เกิน +${diff.toLocaleString('th-TH')}` : `ขาด ${diff.toLocaleString('th-TH')}`);
+  });
+}
+async function saveAudit(e) {
+  e.preventDefault();
+  const branch = $('auditBranch').value;
+  const productId = $('auditProduct').value;
+  const p = byId(state.products, productId);
+  const txDate = $('auditDate').value;
+  const note = $('auditNote').value.trim();
+  const adjust = $('auditAdjust').checked;
+  const rows = [];
+  document.querySelectorAll('.auditActual').forEach(inp => {
+    if(inp.value === '') return;
+    const size = Number(inp.dataset.size);
+    const systemQty = Number(inp.dataset.system || 0);
+    const countedQty = Number(inp.value);
+    if(Number.isFinite(countedQty) && countedQty >= 0) {
+      const variance = countedQty - systemQty;
+      rows.push({branch, productId, productName:p.name, size, systemQty, countedQty, auditVariance:variance, delta: adjust ? variance : 0, qtyAfter: adjust ? countedQty : systemQty, kind: adjust ? 'audit_adjust' : 'audit', reason:'เช็คชาจริงปลายเดือน', note, txDate, auditAdjusted: adjust});
+    }
+  });
+  if(!rows.length) return toast('กรอกจำนวนที่นับจริงอย่างน้อย 1 ขนาด');
+  await applyAuditEntries(rows, adjust);
+  toast(adjust ? 'บันทึกผลเช็คและปรับ Stock แล้ว' : 'บันทึกผลเช็คแล้ว');
+  activePage = 'history'; renderApp();
+}
+async function applyAuditEntries(rows, adjust) {
+  const userInfo = currentUser ? {userId:currentUser.id, userName:currentUser.name, role:currentUser.role} : {userId:'unknown', userName:'ไม่ระบุ', role:'unknown'};
+  if(useLocal) {
+    for(const en of rows) {
+      if(adjust && Number(en.auditVariance) !== 0) {
+        const id = stockDocId(en.branch, en.productId, en.size);
+        let s = state.stock.find(x => x.id === id);
+        if(!s) { s = {id, branch:en.branch, productId:en.productId, productName:productName(en.productId), size:en.size, qty:0}; state.stock.push(s); }
+        s.qty = Number(en.countedQty); s.updatedAt = nowIso();
+      }
+      state.history.unshift({id:makeId('hist'), ...en, ...userInfo, createdAt:nowIso(), appVersion:APP_VERSION});
+    }
+    saveLocalDebounced(); maybeBackupAfterTransaction(); return;
+  }
+  const batch = db.batch();
+  for(const en of rows) {
+    if(adjust && Number(en.auditVariance) !== 0) {
+      const id = stockDocId(en.branch, en.productId, en.size);
+      batch.set(db.collection(`${BASE_PATH}/stock`).doc(id), {id, branch:en.branch, productId:en.productId, productName:productName(en.productId), size:Number(en.size), qty:Number(en.countedQty), updatedAt:firebase.firestore.FieldValue.serverTimestamp()}, {merge:true});
+    }
+    batch.set(db.collection(`${BASE_PATH}/history`).doc(makeId('hist')), {...en, ...userInfo, createdAt:firebase.firestore.FieldValue.serverTimestamp(), appVersion:APP_VERSION});
+  }
+  await batch.commit();
+  maybeBackupAfterTransaction();
+}
+
+function renderHistory() {
+  if (activePage !== 'history') return;
+  const branchOptions = ['ทั้งหมด', ...branches()].map(b=>`<option>${safe(b)}</option>`).join('');
+  const pOptions = ['ทั้งหมด', ...activeProducts().map(p=>p.id)].map(v=>`<option value="${safe(v)}">${safe(v==='ทั้งหมด'?'ทั้งหมด':productName(v))}</option>`).join('');
+  $('page-history').innerHTML = `
+    <div class="card">
+      <h1>ประวัติย้อนหลัง</h1>
+      <p class="muted">ทุกบทบาทดูประวัติได้ทั้งหมด${canOwner() ? ' • เจ้าของซ่อนประวัติจากคนอื่นและแสดงกลับมาได้' : ''}</p>
+      <div class="grid grid-3">
+        <div class="field"><label>สาขา</label><select id="histBranch">${branchOptions}</select></div>
+        <div class="field"><label>ชนิดชา</label><select id="histProduct">${pOptions}</select></div>
+        <div class="field"><label>ค้นหา</label><input id="histSearch" placeholder="เหตุผล, ผู้ทำ, หมายเหตุ"></div>
+      </div>
+      <div class="btn-row" style="margin-top:12px"><button id="exportHistoryCsvBtn" class="btn secondary">ดาวน์โหลดประวัติ CSV</button></div>
+    </div>
+    <div id="historyList" class="card"></div>`;
+  ['histBranch','histProduct','histSearch'].forEach(id => $(id).oninput = renderHistoryList);
+  $('exportHistoryCsvBtn').onclick = () => downloadCsv('love-matcha-history.csv', historyRowsForExport());
+  renderHistoryList();
+}
+function historyRowsForDisplay() {
+  let rows = [...state.history];
+  // ประวัติที่เจ้าของกดลบจะถูกซ่อนจากผู้จัดการ/พนักงาน แต่เจ้าของยังเห็นเป็นรายการที่ซ่อนไว้
+  if (!canOwner()) rows = rows.filter(r => !r.deletedAt && !r.hiddenFromOthers);
+  const b = $('histBranch')?.value || 'ทั้งหมด'; if (b !== 'ทั้งหมด') rows = rows.filter(r => r.branch === b);
+  const p = $('histProduct')?.value || 'ทั้งหมด'; if (p !== 'ทั้งหมด') rows = rows.filter(r => r.productId === p);
+  const q = ($('histSearch')?.value || '').toLowerCase(); if (q) rows = rows.filter(r => JSON.stringify(r).toLowerCase().includes(q));
+  rows.sort((a,b)=>dateFromFirestore(b.createdAt).localeCompare(dateFromFirestore(a.createdAt)));
+  return rows;
+}
+function historyRowsForExport() {
+  return historyRowsForDisplay().map(r => ({
+    วันที่บันทึก: moneyDate(dateFromFirestore(r.createdAt)),
+    วันที่ทำรายการ: dateOnlyBE(r.txDate),
+    ผู้ทำ: r.userName || '',
+    บทบาท: roleThai(r.role),
+    สาขา: r.branch || '',
+    ชา: r.productName || productName(r.productId),
+    ขนาด: (r.size || '') + 'gm',
+    เข้าออก: Number(r.delta || 0),
+    เหตุผล: r.reason || r.kind || '',
+    จำนวนในระบบก่อนเช็ค: r.systemQty ?? '',
+    จำนวนที่นับจริง: r.countedQty ?? '',
+    ผลต่างเช็คจริง: r.auditVariance ?? '',
+    หมายเหตุ: r.note || ''
+  }));
+}
+function renderHistoryList() {
+  const rows = historyRowsForDisplay().slice(0,300);
+  const el = $('historyList'); if(!el) return;
+  const auditCell = (r) => r.countedQty !== undefined ? `ระบบ ${Number(r.systemQty ?? 0).toLocaleString('th-TH')} / จริง ${Number(r.countedQty ?? 0).toLocaleString('th-TH')} / ${Number(r.auditVariance||0)===0?'ตรง':Number(r.auditVariance)>0?'เกิน +'+Number(r.auditVariance).toLocaleString('th-TH'):'ขาด '+Number(r.auditVariance).toLocaleString('th-TH')}` : '-';
+  const ownerCol = canOwner() ? '<th>เจ้าของ</th>' : '';
+  const body = rows.map(r => {
+    const hidden = !!(r.deletedAt || r.hiddenFromOthers);
+    const rowClass = hidden ? ' style="opacity:.62;background:#fff8f0"' : '';
+    const item = `${safe(r.productName||productName(r.productId))} ${safe(r.size||'')}gm${hidden ? '<div class="small danger-text">ซ่อนจากผู้จัดการ/พนักงานแล้ว</div>' : ''}`;
+    const ownerAction = canOwner() ? `<td>${hidden ? `<div class="btn-row"><span class="role-badge">ซ่อนแล้ว</span><button class="btn secondary" data-show-history="${safe(r.id)}">แสดงกลับ</button></div>` : `<button class="btn danger" data-hide-history="${safe(r.id)}">ซ่อน</button>`}</td>` : '';
+    return `<tr${rowClass}><td>${moneyDate(dateFromFirestore(r.createdAt))}</td><td>${dateOnlyBE(r.txDate)}</td><td>${safe(r.userName||'-')}</td><td>${safe(r.branch||'-')}</td><td>${item}</td><td class="right ${Number(r.delta)<0?'danger-text':Number(r.delta)>0?'ok-text':'muted'}">${Number(r.delta||0)>0?'+':''}${Number(r.delta||0).toLocaleString('th-TH')}</td><td>${safe(r.reason||r.kind||'-')}</td><td>${safe(auditCell(r))}</td><td>${safe(r.note||'')}</td>${ownerAction}</tr>`;
+  }).join('');
+  el.innerHTML = `<div class="table-wrap"><table><thead><tr><th>วันที่บันทึก</th><th>วันที่ทำรายการ</th><th>ผู้ทำ</th><th>สาขา</th><th>รายการ</th><th class="right">เข้า/ออก</th><th>เหตุผล</th><th>ผลเช็คจริง</th><th>หมายเหตุ</th>${ownerCol}</tr></thead><tbody>${body}</tbody></table></div>`;
+  if (canOwner()) {
+    document.querySelectorAll('[data-hide-history]').forEach(btn => btn.onclick = () => hideHistory(btn.dataset.hideHistory));
+    document.querySelectorAll('[data-show-history]').forEach(btn => btn.onclick = () => showHistory(btn.dataset.showHistory));
+  }
+}
+async function hideHistory(id) {
+  if(!canOwner()) return toast('ซ่อนประวัติได้เฉพาะเจ้าของเท่านั้น');
+  const h = byId(state.history, id);
+  if(!h) return toast('ไม่พบประวัติ');
+  if(!confirm('ยืนยันซ่อนประวัติรายการนี้?\nหลังซ่อนแล้ว ผู้จัดการและพนักงานจะไม่เห็น แต่เจ้าของยังเห็นและกดแสดงกลับได้')) return;
+  const patch = { hiddenFromOthers:true, deletedAt:nowIso(), deletedBy:currentUser.id, deletedByName:currentUser.name };
+  if(useLocal) {
+    const idx=state.history.findIndex(x=>x.id===id);
+    if(idx>=0) state.history[idx] = {...state.history[idx], ...patch};
+    saveLocalDebounced(); renderHistoryList(); toast('ซ่อนประวัติจากคนอื่นแล้ว'); return;
+  }
+  await db.collection(`${BASE_PATH}/history`).doc(id).set(patch, {merge:true});
+  toast('ซ่อนประวัติจากคนอื่นแล้ว');
+}
+async function showHistory(id) {
+  if(!canOwner()) return toast('แสดงประวัติกลับได้เฉพาะเจ้าของเท่านั้น');
+  const h = byId(state.history, id);
+  if(!h) return toast('ไม่พบประวัติ');
+  const patch = { hiddenFromOthers:false, deletedAt:null, restoredAt:nowIso(), restoredBy:currentUser.id, restoredByName:currentUser.name };
+  if(useLocal) {
+    const idx=state.history.findIndex(x=>x.id===id);
+    if(idx>=0) state.history[idx] = {...state.history[idx], ...patch};
+    saveLocalDebounced(); renderHistoryList(); toast('แสดงประวัติกลับมาแล้ว'); return;
+  }
+  await db.collection(`${BASE_PATH}/history`).doc(id).set(patch, {merge:true});
+  toast('แสดงประวัติกลับมาแล้ว');
+}
+
+function renderProducts() {
+  if (activePage !== 'products') return;
+  const can = canManageProducts();
+  $('page-products').innerHTML = `
+    <div class="card">
+      <h1>รายการมัทฉะ / ขนาด / แจ้งเตือน</h1>
+      <p class="muted">ตั้งค่าแจ้งเตือนใกล้หมดแยกตามชนิดชาและขนาดได้ ค่า 0 = ปิดเตือน และสามารถเพิ่ม/แก้ขนาดของแต่ละชาได้</p>
+      ${can ? `<form id="productForm" class="grid grid-3"><div class="field"><label>ชื่อชาใหม่</label><input id="newProductName" placeholder="เช่น Matcha Premium"></div><div class="field"><label>ขนาดที่มี</label><input id="newProductSizes" value="40, 100, 500, 1000" placeholder="เช่น 40,100,500"></div><div class="field"><label>&nbsp;</label><button class="btn" type="submit">เพิ่มรายการชา</button></div></form>` : '<div class="notice">พนักงานดูรายการได้ แต่เพิ่ม/แก้ไม่ได้</div>'}
+    </div>
+    <div class="card"><div class="table-wrap"><table><thead><tr><th>ลำดับ</th><th>ชื่อชา</th><th>ขนาดที่ใช้</th><th>แจ้งเตือนใกล้หมด</th><th>สถานะ</th><th>จัดการ</th></tr></thead><tbody>${activeProducts().map((p,i)=>productRow(p,i,can)).join('')}</tbody></table></div></div>`;
+  if (can) {
+    $('productForm').onsubmit = async (e) => {
+      e.preventDefault();
+      const name=$('newProductName').value.trim();
+      const sizes = normalizeSizes($('newProductSizes').value);
+      if(!name) return toast('กรอกชื่อชาก่อน');
+      if(!sizes.length) return toast('กรอกขนาดอย่างน้อย 1 ขนาด');
+      await saveProduct({ id: productIdFromName(name), name, sizes, alert: 0, alerts: defaultAlerts(sizes), active:true, order: state.products.length+1, createdAt: nowIso() });
+      $('newProductName').value=''; toast('เพิ่มรายการชาแล้ว');
+    };
+    document.querySelectorAll('[data-save-alerts]').forEach(btn => btn.onclick = () => saveProductAlerts(btn.dataset.saveAlerts));
+    document.querySelectorAll('[data-edit-product]').forEach(btn => btn.onclick = () => editProduct(btn.dataset.editProduct));
+    document.querySelectorAll('[data-edit-sizes]').forEach(btn => btn.onclick = () => editProductSizes(btn.dataset.editSizes));
+    document.querySelectorAll('[data-toggle-product]').forEach(btn => btn.onclick = () => toggleProduct(btn.dataset.toggleProduct));
+  }
+}
+function productRow(p,i,can) {
+  const alerts = alertsForProduct(p);
+  const alertFields = sizesForProduct(p).map(size => {
+    const val = Number(alerts[String(size)] || 0);
+    return `<label class="chip" style="margin:3px 4px 3px 0">${size}gm ${can ? `<input id="${alertInputId(p.id,size)}" type="number" min="0" step="1" inputmode="numeric" value="${val}" title="0 = ปิดเตือน" style="width:100px;min-height:42px;padding:8px">` : (val > 0 ? `≤ ${val}` : 'ปิด')}</label>`;
+  }).join('');
+  return `<tr><td>${i+1}</td><td><b>${safe(p.name)}</b><div class="small muted">0 = ปิดเตือน</div></td><td>${safe(sizesText(p))}</td><td>${alertFields}</td><td>${p.active!==false?'ใช้งาน':'ปิด'}</td><td>${can?`<button class="btn" data-save-alerts="${p.id}">บันทึกเตือน</button> <button class="btn secondary" data-edit-product="${p.id}">แก้ชื่อ</button> <button class="btn secondary" data-edit-sizes="${p.id}">แก้ขนาด</button> <button class="btn ghost" data-toggle-product="${p.id}">${p.active!==false?'ปิด':'เปิด'}</button>`:'-'}</td></tr>`;
+}
+async function saveProductAlerts(id) {
+  const p = byId(state.products,id); if(!p) return;
+  const alerts = defaultAlerts(sizesForProduct(p));
+  for (const size of sizesForProduct(p)) alerts[String(size)] = Math.max(0, Number($(alertInputId(id,size))?.value || 0) || 0);
+  await saveProduct({...p, alerts, alert: 0, updatedAt: nowIso()});
+  toast('บันทึกแจ้งเตือนแล้ว');
+}
+async function saveProduct(p) {
+  p = {...p, sizes:sizesForProduct(p), alerts: alertsForProduct(p), alert: 0};
+  if (useLocal) {
+    const idx=state.products.findIndex(x=>x.id===p.id);
+    if(idx>=0) state.products[idx]={...state.products[idx],...p}; else state.products.push(p);
+    for(const b of branches()) for(const size of sizesForProduct(p)) {
+      const id = stockDocId(b,p.id,size);
+      if(!state.stock.find(s=>s.id===id)) state.stock.push({id,branch:b,productId:p.id,productName:p.name,size,qty:0,updatedAt:nowIso()});
+    }
+    saveLocalDebounced(); renderProducts(); return;
+  }
+  const batch = db.batch();
+  batch.set(db.collection(`${BASE_PATH}/products`).doc(p.id), p, {merge:true});
+  for(const b of branches()) for(const size of sizesForProduct(p)) {
+    const id = stockDocId(b,p.id,size);
+    const exists = state.stock.find(s=>s.id===id);
+    const data = {id, branch:b, productId:p.id, productName:p.name, size, updatedAt:firebase.firestore.FieldValue.serverTimestamp()};
+    if(!exists) data.qty = 0;
+    batch.set(db.collection(`${BASE_PATH}/stock`).doc(id), data, {merge:true});
+  }
+  await batch.commit();
+}
+function editProduct(id) {
+  const p = byId(state.products,id); if(!p) return;
+  const name = prompt('แก้ชื่อชา', p.name); if(!name) return;
+  saveProduct({...p, name:name.trim(), updatedAt:nowIso()}).then(()=>toast('แก้ชื่อรายการแล้ว'));
+}
+function editProductSizes(id) {
+  const p = byId(state.products,id); if(!p) return;
+  const txt = prompt('แก้/เพิ่มขนาด ใช้ comma คั่น เช่น 40, 100, 500, 1000', sizesForProduct(p).join(', '));
+  if(txt === null) return;
+  const sizes = normalizeSizes(txt);
+  if(!sizes.length) return toast('ต้องมีขนาดอย่างน้อย 1 ขนาด');
+  const oldAlerts = alertsForProduct(p);
+  const alerts = defaultAlerts(sizes);
+  for(const size of sizes) alerts[String(size)] = Number(oldAlerts[String(size)] || 0);
+  saveProduct({...p, sizes, alerts, updatedAt:nowIso()}).then(()=>toast('บันทึกขนาดแล้ว'));
+}
+function toggleProduct(id) { const p=byId(state.products,id); if(p) saveProduct({...p, active: p.active===false, updatedAt:nowIso()}); }
+
+function renderUsers() {
+  if (activePage !== 'users') return;
+  const roleOptions = canOwner()
+    ? '<option value="staff">พนักงาน</option><option value="manager">ผู้จัดการ</option><option value="owner">เจ้าของ</option>'
+    : '<option value="staff">พนักงาน</option>';
+  const ruleText = canOwner()
+    ? 'เจ้าของแก้บทบาทคนอื่นได้เป็น เจ้าของ / ผู้จัดการ / พนักงาน และลบไอดีผู้จัดการหรือพนักงานได้'
+    : 'ผู้จัดการแก้บทบาทผู้จัดการ/พนักงานคนอื่นได้เป็น ผู้จัดการหรือพนักงาน และลบได้เฉพาะพนักงาน';
+  const managementHtml = canManageUsers() ? `
+    <div class="card">
+      <h1>จัดการผู้ใช้</h1>
+      <p class="muted">PIN ต้องเป็นตัวเลข 4 หลัก และซ้ำกันได้ เพราะเลือกชื่อผู้ใช้ก่อนใส่ PIN</p>
+      <div class="notice">${ruleText} — ระบบจะไม่ให้แก้บทบาทหรือลบไอดีของตัวเอง และการลบไอดีต้องกรอก PIN ของตัวเองเพื่อยืนยัน</div>
+      <form id="userForm" class="grid grid-4" style="margin-top:12px">
+        <div class="field"><label>ชื่อ</label><input id="newUserName" required></div>
+        <div class="field"><label>บทบาท</label><select id="newUserRole">${roleOptions}</select></div>
+        <div class="field"><label>สาขาหลัก</label><select id="newUserBranch"><option>ทุกสาขา</option>${branches().map(b=>`<option>${safe(b)}</option>`).join('')}</select></div>
+        <div class="field"><label>PIN</label><input id="newUserPin" inputmode="numeric" maxlength="4" pattern="[0-9]{4}" required placeholder="4 ตัวเลข"></div>
+        <button class="btn" type="submit">เพิ่มผู้ใช้</button>
+      </form>
+    </div>
+    <div class="card"><h2>รายชื่อผู้ใช้</h2><div class="table-wrap"><table><thead><tr><th>ชื่อ</th><th>บทบาท</th><th>สาขา</th><th>PIN</th><th>สถานะ</th><th>จัดการ</th></tr></thead><tbody>${state.users.map(userRow).join('')}</tbody></table></div></div>` : `
+    <div class="card">
+      <h1>บัญชีของฉัน</h1>
+      <p class="muted">พนักงานสามารถเปลี่ยน PIN ของตัวเองได้เท่านั้น ไม่สามารถเพิ่ม ลบ หรือแก้บทบาทผู้ใช้คนอื่นได้</p>
+      <div class="notice">คุณเข้าสู่ระบบเป็น <b>${safe(currentUser.name)}</b> — ${roleThai(currentUser.role)}</div>
+    </div>`;
+  $('page-users').innerHTML = `
+    <div class="card"><h2>เปลี่ยน PIN ของฉัน</h2><p class="muted">ทุกคนเปลี่ยน PIN ตัวเองได้ โดยต้องกรอก PIN เดิมและยืนยัน PIN ใหม่ก่อน</p><div class="grid grid-4"><div class="field"><label>PIN เดิม</label><input id="myOldPin" inputmode="numeric" type="password" maxlength="4" pattern="[0-9]{4}" placeholder="4 ตัวเลข"></div><div class="field"><label>PIN ใหม่</label><input id="myNewPin" inputmode="numeric" type="password" maxlength="4" pattern="[0-9]{4}" placeholder="4 ตัวเลข"></div><div class="field"><label>ยืนยัน PIN ใหม่</label><input id="myNewPin2" inputmode="numeric" type="password" maxlength="4" pattern="[0-9]{4}" placeholder="ใส่ซ้ำ"></div><div class="field"><label>&nbsp;</label><button id="changeMyPinBtn" class="btn">เปลี่ยน PIN</button></div></div></div>
+    ${managementHtml}`;
+  $('changeMyPinBtn').onclick = changeMyPin;
+  if (canManageUsers()) {
+    $('userForm').onsubmit = addUser;
+    document.querySelectorAll('[data-user-role]').forEach(sel => sel.onchange = () => changeUserRole(sel.dataset.userRole, sel.value));
+    document.querySelectorAll('[data-user-toggle]').forEach(btn => btn.onclick = () => toggleUser(btn.dataset.userToggle));
+    document.querySelectorAll('[data-user-delete]').forEach(btn => btn.onclick = () => deleteUser(btn.dataset.userDelete));
+  }
+}
+function userRow(u) {
+  const roleChoices = allowedRolesForTarget(u);
+  const roleCell = roleChoices.length
+    ? `<select class="user-role-select" data-user-role="${u.id}" aria-label="เปลี่ยนบทบาทของ ${safe(u.name)}">${roleValueOptions(roleChoices, u.role)}</select>`
+    : `<span class="role-badge">${roleThai(u.role)}</span>${u.id===currentUser.id ? '<div class="small muted">ไอดีของฉัน</div>' : ''}`;
+  const actions = [];
+  if (canToggleUserStatus(u)) actions.push(`<button class="btn secondary" data-user-toggle="${u.id}">${u.active!==false?'ปิด':'เปิด'}</button>`);
+  if (canDeleteUser(u)) actions.push(`<button class="btn danger" data-user-delete="${u.id}">ลบไอดี</button>`);
+  return `<tr><td><b>${safe(u.name)}</b></td><td>${roleCell}</td><td>${safe(u.branch||'ทุกสาขา')}</td><td>${canOwner()?safe(u.pin):'••••'}</td><td>${u.active!==false?'ใช้งาน':'ปิด'}</td><td><div class="btn-row">${actions.length ? actions.join('') : '-'}</div></td></tr>`;
+}
+async function addUser(e) {
+  e.preventDefault();
+  const role=$('newUserRole').value;
+  if(currentUser.role==='manager' && role!=='staff') return toast('ผู้จัดการเพิ่มได้เฉพาะพนักงาน');
+  const u={id:makeId('user'), name:$('newUserName').value.trim(), role, branch:$('newUserBranch').value, pin:$('newUserPin').value.trim(), active:true, createdAt:nowIso()};
+  if(!u.name || !u.pin) return toast('กรอกชื่อและ PIN');
+  if(!validateFourDigitPin(u.pin)) return toast('PIN ต้องเป็นตัวเลข 4 ตัว');
+  await saveUser(u); e.target.reset(); toast('เพิ่มผู้ใช้แล้ว');
+}
+async function saveUser(u) {
+  if(useLocal) { const idx=state.users.findIndex(x=>x.id===u.id); if(idx>=0) state.users[idx]={...state.users[idx],...u}; else state.users.push(u); saveLocalDebounced(); renderUsers(); return; }
+  await db.collection(`${BASE_PATH}/users`).doc(u.id).set(u, {merge:true});
+}
+async function changeUserRole(id, newRole) {
+  const u = byId(state.users, id);
+  if(!u) return toast('ไม่พบผู้ใช้');
+  const allowed = allowedRolesForTarget(u);
+  if(!allowed.includes(newRole)) { renderUsers(); return toast('ไม่มีสิทธิ์แก้บทบาทนี้'); }
+  if(u.role === newRole) return;
+  await saveUser({...u, role:newRole, updatedAt:nowIso(), updatedBy:currentUser.id, updatedByName:currentUser.name});
+  toast(`เปลี่ยนบทบาท ${u.name} เป็น ${roleThai(newRole)} แล้ว`);
+}
+function toggleUser(id) {
+  const u=byId(state.users,id);
+  if(!u) return toast('ไม่พบผู้ใช้');
+  if(!canToggleUserStatus(u)) return toast('ไม่มีสิทธิ์ปิด/เปิดผู้ใช้นี้');
+  saveUser({...u, active:u.active===false, updatedAt:nowIso(), updatedBy:currentUser.id, updatedByName:currentUser.name});
+}
+async function deleteUser(id) {
+  const u=byId(state.users,id);
+  if(!u) return toast('ไม่พบผู้ใช้');
+  if(!canDeleteUser(u)) return toast('ไม่มีสิทธิ์ลบไอดีนี้');
+  if(!confirm(`ยืนยันลบไอดี "${u.name}"?\nการลบจะเอาชื่อนี้ออกจากหน้า Login แต่ประวัติเก่าที่เคยทำรายการไว้ยังคงอยู่`)) return;
+  const pin = prompt('กรอก PIN ของคุณเอง 4 ตัว เพื่อยืนยันการลบไอดี');
+  if(pin === null) return;
+  if(String(pin).trim() !== String(currentUser.pin)) return toast('PIN ยืนยันไม่ถูกต้อง จึงไม่ลบไอดี');
+  if(useLocal) {
+    state.users = state.users.filter(x => x.id !== id);
+    saveLocalDebounced(); renderUsers(); toast('ลบไอดีแล้ว'); return;
+  }
+  await db.collection(`${BASE_PATH}/users`).doc(id).delete();
+  toast('ลบไอดีแล้ว');
+}
+async function changeMyPin() {
+  const oldPin=$('myOldPin').value.trim();
+  const pin=$('myNewPin').value.trim();
+  const pin2=$('myNewPin2').value.trim();
+  if(!oldPin || !pin || !pin2) return toast('กรอก PIN เดิม / PIN ใหม่ / ยืนยัน PIN ใหม่ให้ครบ');
+  if(String(oldPin) !== String(currentUser.pin)) return toast('PIN เดิมไม่ถูกต้อง');
+  if(!validateFourDigitPin(pin) || !validateFourDigitPin(pin2)) return toast('PIN ต้องเป็นตัวเลข 4 ตัว');
+  if(pin !== pin2) return toast('PIN ใหม่กับยืนยัน PIN ใหม่ไม่ตรงกัน');
+  await saveUser({...currentUser, pin, updatedAt:nowIso(), updatedBy:currentUser.id, updatedByName:currentUser.name});
+  currentUser = {...currentUser, pin};
+  $('myOldPin').value=''; $('myNewPin').value=''; $('myNewPin2').value='';
+  toast('เปลี่ยน PIN แล้ว');
+}
+
+function renderBackup() {
+  if(activePage !== 'backup') return;
+  if(!canOwner()) { $('page-backup').innerHTML = '<div class="card"><h1>ไม่มีสิทธิ์</h1><p class="muted">สำรองข้อมูลและ Google Drive Auto Backup ทำได้เฉพาะเจ้าของเท่านั้น</p></div>'; return; }
+  $('page-backup').innerHTML = `
+    <div class="card">
+      <h1>สำรองข้อมูล</h1>
+      <p class="muted">ดาวน์โหลดไฟล์สำรองเก็บไว้ได้ และตั้งค่าให้ส่งเข้า Google Drive ผ่าน Apps Script ได้</p>
+      <div class="grid grid-3">
+        <button id="downloadJsonBtn" class="btn">ดาวน์โหลด Backup JSON</button>
+        <button id="downloadCsvBtn" class="btn secondary">ดาวน์โหลด Stock CSV</button>
+        <button id="sendDriveBtn" class="btn ghost">ส่ง Backup ไป Google Drive</button>
+      </div>
+      <div class="notice" style="margin-top:12px">Auto Backup ไป Google Drive จะทำงานเมื่อมีเครื่องเปิดหน้าเว็บนี้อยู่เท่านั้น ถ้าปิดทุกเครื่อง ระบบเว็บ static จะไม่มีตัวรันอัตโนมัติ</div>
+    </div>
+    <div class="card">
+      <h2>ตั้งค่า Google Drive Auto Backup</h2>
+      <div class="grid grid-2">
+        <div class="field"><label>Google Apps Script Web App URL</label><input id="driveWebhookUrl" value="${safe(state.settings.driveWebhookUrl||'')}" placeholder="https://script.google.com/macros/s/.../exec"></div>
+        <div class="field"><label>รูปแบบ Auto Backup</label><select id="autoBackupMode"><option value="off">ปิด Auto Backup</option><option value="interval">สำรองทุกกี่นาที</option><option value="transaction">สำรองเมื่อมีการทำรายการ</option><option value="both">ทั้งทุกกี่นาที + เมื่อมีรายการ</option></select></div>
+      </div>
+      <div id="intervalMinutesBox" class="field" style="margin-top:10px"><label>สำรองทุกกี่นาที</label><input id="autoBackupMinutes" type="number" min="1" step="1" value="${state.settings.autoBackupMinutes||30}"></div>
+      <div class="btn-row" style="margin-top:12px"><button id="saveBackupSettingsBtn" class="btn">บันทึกตั้งค่าสำรองข้อมูล</button></div>
+      <p class="small muted">สำรองล่าสุด: ${state.settings.lastBackupAt ? moneyDate(state.settings.lastBackupAt) : '-'}</p>
+    </div>`;
+  $('downloadJsonBtn').onclick=downloadBackupJson;
+  $('downloadCsvBtn').onclick=()=>downloadCsv('love-matcha-stock.csv', stockRows());
+  $('sendDriveBtn').onclick=sendDriveBackup;
+  $('saveBackupSettingsBtn').onclick=saveBackupSettings;
+  $('autoBackupMode').value = backupMode();
+  const toggleMinutes = () => $('intervalMinutesBox').classList.toggle('hidden', !['interval','both'].includes($('autoBackupMode').value));
+  $('autoBackupMode').onchange = toggleMinutes; toggleMinutes();
+}
+function buildBackup() { return { appVersion: APP_VERSION, exportedAt: nowIso(), settings: state.settings, users: state.users, products: state.products, stock: state.stock, history: state.history }; }
+function downloadBackupJson() { downloadFile('love-matcha-backup-'+todayInput()+'.json', JSON.stringify(buildBackup(), null, 2), 'application/json'); }
+function stockRows() { return state.stock.map(s=>({branch:s.branch, product:s.productName||productName(s.productId), size:s.size, qty:s.qty, updatedAt:dateFromFirestore(s.updatedAt)})); }
+function downloadFile(filename, content, type='text/plain') { const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([content],{type})); a.download=filename; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),1000); }
+function downloadCsv(filename, rows) {
+  if(!rows.length) return toast('ไม่มีข้อมูลให้ดาวน์โหลด');
+  const headers = Object.keys(rows[0]);
+  const csv = [headers.join(','), ...rows.map(r=>headers.map(h=>'"'+String(r[h]??'').replace(/"/g,'""')+'"').join(','))].join('\n');
+  downloadFile(filename, '﻿'+csv, 'text/csv;charset=utf-8');
+}
+async function sendDriveBackup() {
+  const url = state.settings.driveWebhookUrl;
+  if(!url) return toast('กรอก Google Apps Script URL ก่อน');
+  try {
+    await fetch(url, { method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'}, body: JSON.stringify(buildBackup()) });
+    await saveSettings({...state.settings, lastBackupAt: nowIso()});
+    dirtySinceBackup = false;
+    toast('ส่ง Backup แล้ว');
+  } catch(err) { console.error(err); toast('ส่ง Backup ไม่สำเร็จ'); }
+}
+async function saveBackupSettings() {
+  if(!canOwner()) return toast('เฉพาะเจ้าของตั้งค่า Backup ได้');
+  const mode = $('autoBackupMode').value;
+  await saveSettings({...state.settings, driveWebhookUrl:$('driveWebhookUrl').value.trim(), autoBackupMode: mode, autoBackup: mode !== 'off', autoBackupMinutes:Math.max(1, Number($('autoBackupMinutes').value||30)), updatedAt:nowIso()});
+  startAutoBackup(); toast('บันทึกตั้งค่าสำรองข้อมูลแล้ว');
+}
+function startAutoBackup() {
+  clearInterval(backupTimer);
+  const min = Math.max(1, Number(state.settings.autoBackupMinutes||30));
+  if(isBackupIntervalMode() && state.settings.driveWebhookUrl) {
+    backupTimer = setInterval(()=>{ if(dirtySinceBackup) sendDriveBackup(); }, min*60*1000);
+  }
+}
+
+function renderSettings() {
+  if(activePage !== 'settings') return;
+  const disabled = canOwner() ? '' : 'disabled';
+  $('page-settings').innerHTML = `
+    <div class="card">
+      <h1>ตั้งค่าหน้าเว็บ</h1>
+      ${!canOwner()?'<div class="notice">เฉพาะเจ้าของเท่านั้นที่ปรับสี โลโก้ และหน้าเว็บได้</div>':''}
+      <div class="grid grid-2">
+        <div class="field"><label>ชื่อระบบ/ร้าน</label><input id="settingShopName" value="${safe(state.settings.shopName||'Love Matcha Stock')}" ${disabled}></div>
+        <div class="field"><label>สีหลัก</label><input id="settingBrandColor" type="color" value="${safe(state.settings.brandColor||'#2e7d58')}" ${disabled}></div>
+        <div class="field"><label>ขนาดตัวอักษร</label><select id="settingFontScale" ${disabled}><option value="1">ปกติ</option><option value="1.05">ใหญ่</option><option value="1.15">ใหญ่มาก</option><option value="1.25">ใหญ่พิเศษ</option></select></div>
+      </div>
+      <div class="field" style="margin-top:12px"><label>Logo ร้าน</label><input id="logoInput" type="file" accept="image/*" ${disabled}></div>
+      <div class="btn-row" style="margin-top:12px"><button id="saveSettingsBtn" class="btn" ${disabled}>บันทึกตั้งค่า</button><button id="removeLogoBtn" class="btn secondary" ${disabled}>ลบโลโก้</button><button id="openConfigBtn" class="btn ghost" ${disabled}>ตั้งค่า Firebase / realtime</button></div>
+    </div>
+    <div class="card">
+      <h2>สาขา</h2>
+      <p class="muted">ใช้คั่นด้วยบรรทัดละ 1 สาขา</p>
+      <textarea id="branchesText" ${disabled}>${safe(branches().join('\n'))}</textarea>
+      <button id="saveBranchesBtn" class="btn" style="margin-top:10px" ${disabled}>บันทึกสาขา</button>
+    </div>`;
+  $('settingFontScale').value = String(state.settings.fontScale || 1.05);
+  $('saveSettingsBtn').onclick=saveVisualSettings;
+  $('removeLogoBtn').onclick=()=>saveSettings({...state.settings, logoDataUrl:'', updatedAt:nowIso()});
+  $('openConfigBtn').onclick=openConfigDialog;
+  $('saveBranchesBtn').onclick=saveBranches;
+}
+async function saveVisualSettings() {
+  if(!canOwner()) return;
+  const updates = {...state.settings, shopName:$('settingShopName').value.trim()||'Love Matcha Stock', brandColor:$('settingBrandColor').value, fontScale:Number($('settingFontScale').value), updatedAt:nowIso()};
+  const file = $('logoInput').files?.[0];
+  if(file) updates.logoDataUrl = await resizeImageDataUrl(file, 280);
+  await saveSettings(updates); toast('บันทึกตั้งค่าหน้าเว็บแล้ว');
+}
+function resizeImageDataUrl(file, max) { return new Promise((resolve,reject)=>{ const img=new Image(); img.onload=()=>{ const c=document.createElement('canvas'); const scale=Math.min(1,max/Math.max(img.width,img.height)); c.width=Math.round(img.width*scale); c.height=Math.round(img.height*scale); c.getContext('2d').drawImage(img,0,0,c.width,c.height); resolve(c.toDataURL('image/jpeg',.82)); }; img.onerror=reject; img.src=URL.createObjectURL(file); }); }
+async function saveBranches() {
+  if(!canOwner()) return;
+  const list = $('branchesText').value.split('\n').map(x=>x.trim()).filter(Boolean);
+  if(!list.length) return toast('ต้องมีอย่างน้อย 1 สาขา');
+  await saveSettings({...state.settings, branches:list, updatedAt:nowIso()});
+  // create stock docs for new branches
+  for (const b of list) for (const p of activeProducts()) for (const size of sizesForProduct(p)) {
+    const id=stockDocId(b,p.id,size);
+    if(!state.stock.find(s=>s.id===id)) {
+      if(useLocal) state.stock.push({id,branch:b,productId:p.id,productName:p.name,size,qty:0,updatedAt:nowIso()});
+      else await db.collection(`${BASE_PATH}/stock`).doc(id).set({id,branch:b,productId:p.id,productName:p.name,size,qty:0,updatedAt:firebase.firestore.FieldValue.serverTimestamp()}, {merge:true});
+    }
+  }
+  saveLocalDebounced(); toast('บันทึกสาขาแล้ว');
+}
+async function saveSettings(settings) {
+  state.settings = {...state.settings, ...settings};
+  setCssSettings();
+  if(useLocal) { saveLocalDebounced(); renderApp(); return; }
+  await db.collection(`${BASE_PATH}/settings`).doc('main').set({...settings, updatedAt: firebase.firestore.FieldValue.serverTimestamp()}, {merge:true});
+}
+
+function openConfigDialog() {
+  if(!canOwner()) { toast('ตั้งค่า Firebase / realtime ได้เฉพาะไอดีเจ้าของ'); return; }
+  $('firebaseConfigText').value = JSON.stringify(getFirebaseConfig() || {}, null, 2);
+  $('configDialog').showModal();
+}
+function saveFirebaseConfig() {
+  if(!canOwner()) { toast('เฉพาะเจ้าของบันทึก Firebase config ได้'); return; }
+  const txt = $('firebaseConfigText').value.trim();
+  try {
+    let cfg;
+    if (txt.includes('firebaseConfig')) {
+      const objText = txt.slice(txt.indexOf('{'), txt.lastIndexOf('}')+1);
+      cfg = Function('return ' + objText)();
+    } else cfg = JSON.parse(txt);
+    if(!hasConfig(cfg)) return toast('config ยังไม่ครบ');
+    localStorage.setItem('loveMatcha.firebaseConfig', JSON.stringify(cfg));
+    location.reload();
+  } catch(err) { toast('อ่าน config ไม่ได้ ลองวางเป็น JSON'); }
+}
+function clearFirebaseConfig() { if(!canOwner()) { toast('เฉพาะเจ้าของลบ Firebase config ได้'); return; } localStorage.removeItem('loveMatcha.firebaseConfig'); location.reload(); }
+
+window.addEventListener('DOMContentLoaded', () => {
+  $('loginBtn').onclick = login;
+  $('saveFirebaseConfigBtn').onclick = saveFirebaseConfig;
+  $('clearFirebaseConfigBtn').onclick = clearFirebaseConfig;
+  $('closeConfigBtn').onclick = () => $('configDialog').close();
+  boot();
+});
+</script>
+</body>
+</html>
