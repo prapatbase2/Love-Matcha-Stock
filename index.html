@@ -12,13 +12,11 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="Love Matcha Stock" />
   <link rel="apple-touch-icon" href="./icons/icon-192.png" />
-  <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png" />
-  <link rel="icon" type="image/png" sizes="512x512" href="./icons/icon-512.png" />
-
   <link rel="preconnect" href="https://www.gstatic.com" />
   <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
   <style>
     :root {
       --brand: #2e7d58;
@@ -200,8 +198,8 @@
 <script>
 'use strict';
 
-const APP_VERSION = 'LoveMatchaStock-PWA-v1.0';
-const PWA_VERSION = 'v1.0';
+const APP_VERSION = 'LoveMatchaStock-PWA-v1.1-restore';
+const PWA_VERSION = 'v1.1';
 const BASE_PATH = 'loveMatchaStock/v1';
 const DEFAULT_BRANCHES = ["หนองคาย", "อุดรธานี", "ศรีราชา", "นครพนม", "ออกบูธ"];
 const DEFAULT_PRODUCTS = ["Kagoshima Midori", "Tsuki", "Umeji", "Okumidori kago", "Hinoka", "Uji", "Hikari", "Takumi", "Asahi", "Okumidori Uji", "Yame1", "Yame2", "Yame Ceremonial", "ชาออกบูธ", "Roast Light", "Roast Medium", "Roast Dark", "Culinary Grade"];
@@ -256,7 +254,7 @@ function applyOfflineLock() {
     '#txForm button[type="submit"]', '#auditForm button[type="submit"]',
     '#page-products button', '#page-users button', '#page-settings button',
     '#page-history [data-history-hide]', '#saveBackupSettingsBtn', '#sendDriveBtn',
-    '#saveFirebaseConfigBtn', '#clearFirebaseConfigBtn'
+    '#saveFirebaseConfigBtn', '#clearFirebaseConfigBtn', '#restoreBackupBtn'
   ];
   document.querySelectorAll(selectors.join(',')).forEach(el => {
     el.disabled = !canWrite;
@@ -1241,7 +1239,7 @@ async function changeMyPin() {
 
 function renderBackup() {
   if(activePage !== 'backup') return;
-  if(!canOwner()) { $('page-backup').innerHTML = '<div class="card"><h1>ไม่มีสิทธิ์</h1><p class="muted">สำรองข้อมูลและ Google Drive Auto Backup ทำได้เฉพาะเจ้าของเท่านั้น</p></div>'; return; }
+  if(!canOwner()) { $('page-backup').innerHTML = '<div class="card"><h1>ไม่มีสิทธิ์</h1><p class="muted">สำรองข้อมูล / Restore / Google Drive Auto Backup ทำได้เฉพาะเจ้าของเท่านั้น</p></div>'; return; }
   $('page-backup').innerHTML = `
     <div class="card">
       <h1>สำรองข้อมูล</h1>
@@ -1252,6 +1250,22 @@ function renderBackup() {
         <button id="sendDriveBtn" class="btn ghost">ส่ง Backup ไป Google Drive</button>
       </div>
       <div class="notice" style="margin-top:12px">Auto Backup ไป Google Drive จะทำงานเมื่อมีเครื่องเปิดหน้าเว็บนี้อยู่เท่านั้น ถ้าปิดทุกเครื่อง ระบบเว็บ static จะไม่มีตัวรันอัตโนมัติ</div>
+    </div>
+    <div class="card">
+      <h2>Restore ข้อมูลสำรอง</h2>
+      <p class="muted">รองรับ JSON Backup เต็มระบบ, CSV Stock, Excel (.xlsx/.xls) และ Google Sheet ที่แชร์/เผยแพร่เป็น CSV ได้</p>
+      <div class="notice"><b>ป้องกันข้อมูลพัง:</b> Restore ทำได้เฉพาะเจ้าของเท่านั้น ต้องออนไลน์และต้องกรอก PIN ของตัวเองยืนยันก่อนทุกครั้ง</div>
+      <div class="grid grid-2" style="margin-top:12px">
+        <div class="field"><label>ไฟล์ Backup / Stock</label><input id="restoreFile" type="file" accept=".json,.csv,.xlsx,.xls,application/json,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"></div>
+        <div class="field"><label>หรือ Google Sheet URL</label><input id="restoreSheetUrl" placeholder="วางลิงก์ Google Sheet หรือ Published CSV URL"></div>
+      </div>
+      <div class="grid grid-2" style="margin-top:12px">
+        <div class="field"><label>รูปแบบ Restore</label><select id="restoreMode"><option value="mergeStock">อัปเดตเฉพาะ Stock ที่อยู่ในไฟล์</option><option value="replaceStock">แทนที่ Stock ทั้งหมดจากไฟล์</option><option value="fullJson">Restore เต็มระบบจาก JSON เท่านั้น</option></select></div>
+        <div class="field"><label>กรอก PIN เจ้าของเพื่อยืนยัน</label><input id="restorePin" type="password" inputmode="numeric" maxlength="4" placeholder="PIN ของคุณ"></div>
+      </div>
+      <div class="field" style="margin-top:12px"><label>พิมพ์คำว่า RESTORE เพื่อยืนยันอีกชั้น</label><input id="restoreConfirmText" placeholder="RESTORE"></div>
+      <div class="btn-row" style="margin-top:12px"><button id="restoreBackupBtn" class="btn danger">Restore ข้อมูล</button></div>
+      <p class="small muted">CSV/Excel/Google Sheet ต้องมีคอลัมน์อย่างน้อย: branch, product, size, qty หรือใช้หัวข้อไทย: สาขา, ชื่อชา, ขนาด, จำนวน</p>
     </div>
     <div class="card">
       <h2>ตั้งค่า Google Drive Auto Backup</h2>
@@ -1266,10 +1280,13 @@ function renderBackup() {
   $('downloadJsonBtn').onclick=downloadBackupJson;
   $('downloadCsvBtn').onclick=()=>downloadCsv('love-matcha-stock.csv', stockRows());
   $('sendDriveBtn').onclick=sendDriveBackup;
+  $('restoreBackupBtn').onclick=restoreBackupData;
   $('saveBackupSettingsBtn').onclick=saveBackupSettings;
   $('autoBackupMode').value = backupMode();
   const toggleMinutes = () => $('intervalMinutesBox').classList.toggle('hidden', !['interval','both'].includes($('autoBackupMode').value));
   $('autoBackupMode').onchange = toggleMinutes; toggleMinutes();
+  enhanceNumberInputs($('page-backup'));
+  applyOfflineLock();
 }
 function buildBackup() { return { appVersion: APP_VERSION, exportedAt: nowIso(), settings: state.settings, users: state.users, products: state.products, stock: state.stock, history: state.history }; }
 function downloadBackupJson() { downloadFile('love-matcha-backup-'+todayInput()+'.json', JSON.stringify(buildBackup(), null, 2), 'application/json'); }
@@ -1281,6 +1298,177 @@ function downloadCsv(filename, rows) {
   const csv = [headers.join(','), ...rows.map(r=>headers.map(h=>'"'+String(r[h]??'').replace(/"/g,'""')+'"').join(','))].join('\n');
   downloadFile(filename, '﻿'+csv, 'text/csv;charset=utf-8');
 }
+
+function csvToRows(csvText) {
+  const rows = [];
+  let row = [], cur = '', inQuotes = false;
+  const text = String(csvText || '').replace(/^\ufeff/, '');
+  for (let i=0; i<text.length; i++) {
+    const ch = text[i], next = text[i+1];
+    if (ch === '"') {
+      if (inQuotes && next === '"') { cur += '"'; i++; }
+      else inQuotes = !inQuotes;
+    } else if (ch === ',' && !inQuotes) { row.push(cur); cur = ''; }
+    else if ((ch === '\n' || ch === '\r') && !inQuotes) {
+      if (ch === '\r' && next === '\n') i++;
+      row.push(cur); cur = '';
+      if (row.some(v => String(v).trim() !== '')) rows.push(row);
+      row = [];
+    } else cur += ch;
+  }
+  row.push(cur);
+  if (row.some(v => String(v).trim() !== '')) rows.push(row);
+  if (!rows.length) return [];
+  const headers = rows[0].map(h => String(h || '').trim());
+  return rows.slice(1).map(r => Object.fromEntries(headers.map((h,i)=>[h, r[i] ?? ''])));
+}
+function firstValue(row, keys) {
+  const lowerMap = {};
+  Object.keys(row || {}).forEach(k => lowerMap[String(k).trim().toLowerCase()] = row[k]);
+  for (const k of keys) {
+    if (row && row[k] !== undefined && row[k] !== '') return row[k];
+    const v = lowerMap[String(k).trim().toLowerCase()];
+    if (v !== undefined && v !== '') return v;
+  }
+  return '';
+}
+function normalizeImportedStockRows(rows) {
+  const out = [];
+  for (const row of rows || []) {
+    const branch = String(firstValue(row, ['branch','สาขา','Branch','BRANCH']) || '').trim();
+    const product = String(firstValue(row, ['product','productName','name','ชื่อชา','ชนิดมัทฉะ','สินค้า','รายการ','Product']) || '').trim();
+    const sizeRaw = firstValue(row, ['size','ขนาด','Size','ไซส์']);
+    const qtyRaw = firstValue(row, ['qty','quantity','จำนวน','คงเหลือ','ยอด','Qty','QTY']);
+    const size = Number(String(sizeRaw).replace(/[^0-9.-]/g,''));
+    const qty = Number(String(qtyRaw).replace(/,/g,'').trim());
+    if (!branch || !product || !Number.isFinite(size) || !Number.isFinite(qty)) continue;
+    out.push({ branch, productName: product, productId: productIdFromName(product), size: Math.round(size), qty });
+  }
+  return out;
+}
+function googleSheetCsvUrl(url) {
+  const u = String(url || '').trim();
+  if (!u) return '';
+  if (u.includes('output=csv') || u.includes('/pub?') || u.includes('format=csv')) return u;
+  const id = (u.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/) || [])[1];
+  const gid = (u.match(/[?&]gid=([0-9]+)/) || [])[1] || '0';
+  if (id) return `https://docs.google.com/spreadsheets/d/${id}/export?format=csv&gid=${gid}`;
+  return u;
+}
+async function parseRestoreSource() {
+  const file = $('restoreFile')?.files?.[0];
+  const sheetUrl = $('restoreSheetUrl')?.value.trim();
+  if (!file && !sheetUrl) throw new Error('เลือกไฟล์หรือใส่ Google Sheet URL ก่อน');
+  if (sheetUrl) {
+    const res = await fetch(googleSheetCsvUrl(sheetUrl));
+    if (!res.ok) throw new Error('อ่าน Google Sheet ไม่สำเร็จ ต้องแชร์เป็น Public หรือ Publish to web ก่อน');
+    const text = await res.text();
+    return { type:'table', rows: csvToRows(text), source:'Google Sheet' };
+  }
+  const name = file.name.toLowerCase();
+  if (name.endsWith('.json')) {
+    const json = JSON.parse(await file.text());
+    return { type:'json', data: json, source:file.name };
+  }
+  if (name.endsWith('.csv')) return { type:'table', rows: csvToRows(await file.text()), source:file.name };
+  if (name.endsWith('.xlsx') || name.endsWith('.xls')) {
+    if (!window.XLSX) throw new Error('ยังโหลดตัวอ่าน Excel ไม่สำเร็จ กรุณาต่อเน็ตแล้วเปิดหน้านี้ใหม่');
+    const buf = await file.arrayBuffer();
+    const wb = XLSX.read(buf, {type:'array'});
+    const ws = wb.Sheets[wb.SheetNames[0]];
+    return { type:'table', rows: XLSX.utils.sheet_to_json(ws, {defval:''}), source:file.name };
+  }
+  throw new Error('รองรับเฉพาะ JSON, CSV, Excel เท่านั้น');
+}
+async function deleteCollectionDocs(path) {
+  if (useLocal) return;
+  while (true) {
+    const snap = await db.collection(path).limit(450).get();
+    if (snap.empty) break;
+    const batch = db.batch();
+    snap.docs.forEach(d => batch.delete(d.ref));
+    await batch.commit();
+  }
+}
+async function commitSetChunks(items, path, idFn) {
+  if (useLocal) return;
+  for (let i=0; i<items.length; i+=450) {
+    const batch = db.batch();
+    items.slice(i, i+450).forEach(item => batch.set(db.collection(path).doc(idFn(item)), item, {merge:true}));
+    await batch.commit();
+  }
+}
+async function applyFullJsonRestore(data) {
+  if (!data || !Array.isArray(data.users) || !Array.isArray(data.products) || !Array.isArray(data.stock)) throw new Error('ไฟล์ JSON ไม่ใช่ Backup เต็มระบบของ Love Matcha Stock');
+  if (useLocal) {
+    state.settings = {...defaultSettings(), ...(data.settings||{}), initialized:true, updatedAt:nowIso()};
+    state.users = data.users; state.products = data.products; state.stock = data.stock; state.history = Array.isArray(data.history) ? data.history : [];
+    saveLocalNow(); renderApp(); return;
+  }
+  await deleteCollectionDocs(`${BASE_PATH}/users`);
+  await deleteCollectionDocs(`${BASE_PATH}/products`);
+  await deleteCollectionDocs(`${BASE_PATH}/stock`);
+  await deleteCollectionDocs(`${BASE_PATH}/history`);
+  await db.collection(`${BASE_PATH}/settings`).doc('main').set({...defaultSettings(), ...(data.settings||{}), initialized:true, updatedAt:firebase.firestore.FieldValue.serverTimestamp()}, {merge:false});
+  await commitSetChunks(data.users, `${BASE_PATH}/users`, x => x.id || makeId('user'));
+  await commitSetChunks(data.products, `${BASE_PATH}/products`, x => x.id || productIdFromName(x.name));
+  await commitSetChunks(data.stock.map(s => ({...s, id:s.id || stockDocId(s.branch, s.productId || productIdFromName(s.productName), s.size)})), `${BASE_PATH}/stock`, x => x.id);
+  if (Array.isArray(data.history) && data.history.length) await commitSetChunks(data.history.map(h => ({...h, id:h.id || makeId('hist')})), `${BASE_PATH}/history`, x => x.id);
+}
+async function applyStockRestore(rows, replaceAll=false) {
+  const imported = normalizeImportedStockRows(rows);
+  if (!imported.length) throw new Error('ไม่พบข้อมูล Stock ในไฟล์ ต้องมี branch/product/size/qty หรือ สาขา/ชื่อชา/ขนาด/จำนวน');
+  const productMap = new Map(state.products.map(p => [p.id, {...p, sizes:sizesForProduct(p)}]));
+  imported.forEach(r => {
+    const old = productMap.get(r.productId);
+    if (old) old.sizes = normalizeSizes([...(old.sizes||[]), r.size]);
+    else productMap.set(r.productId, {id:r.productId, name:r.productName, sizes:[r.size], alert:0, alerts:defaultAlerts([r.size]), active:true, order:productMap.size+1, createdAt:nowIso()});
+  });
+  const products = [...productMap.values()].map(p => ({...p, alerts:{...defaultAlerts(p.sizes), ...(p.alerts||{})}, updatedAt:nowIso()}));
+  const stockItems = imported.map(r => ({id:stockDocId(r.branch, r.productId, r.size), branch:r.branch, productId:r.productId, productName:r.productName, size:r.size, qty:r.qty, updatedAt:nowIso()}));
+  const newBranches = [...new Set([...branches(), ...imported.map(r=>r.branch)])];
+  if (useLocal) {
+    state.products = products;
+    if (replaceAll) state.stock = [];
+    stockItems.forEach(item => { const i = state.stock.findIndex(s=>s.id===item.id); if (i>=0) state.stock[i]=item; else state.stock.push(item); });
+    state.settings = {...state.settings, branches:newBranches, updatedAt:nowIso()};
+    saveLocalNow(); renderApp(); return imported.length;
+  }
+  await db.collection(`${BASE_PATH}/settings`).doc('main').set({branches:newBranches, updatedAt:firebase.firestore.FieldValue.serverTimestamp()}, {merge:true});
+  await commitSetChunks(products, `${BASE_PATH}/products`, x=>x.id);
+  if (replaceAll) await deleteCollectionDocs(`${BASE_PATH}/stock`);
+  await commitSetChunks(stockItems.map(s=>({...s, updatedAt:firebase.firestore.FieldValue.serverTimestamp()})), `${BASE_PATH}/stock`, x=>x.id);
+  const hist = {id:makeId('hist'), type:'restore', kind:'restore', reason:replaceAll?'Restore Stock ทั้งหมด':'Restore Stock บางรายการ', note:`Restore ${imported.length} รายการ โดย ${currentUser.name}`, userId:currentUser.id, userName:currentUser.name, role:currentUser.role, branch:'ทุกสาขา', createdAt:firebase.firestore.FieldValue.serverTimestamp(), txDate:todayInput(), appVersion:APP_VERSION};
+  await db.collection(`${BASE_PATH}/history`).doc(hist.id).set(hist);
+  return imported.length;
+}
+async function restoreBackupData() {
+  if (!canOwner()) return toast('Restore ทำได้เฉพาะเจ้าของเท่านั้น');
+  if (!requireOnlineForWrite()) return;
+  const pin = $('restorePin').value.trim();
+  if (String(pin) !== String(currentUser.pin)) return toast('PIN ยืนยันไม่ถูกต้อง');
+  if (($('restoreConfirmText').value || '').trim().toUpperCase() !== 'RESTORE') return toast('พิมพ์ RESTORE เพื่อยืนยันก่อน');
+  const mode = $('restoreMode').value;
+  if (!confirm('ยืนยัน Restore ข้อมูล? ควรดาวน์โหลด Backup ปัจจุบันเก็บไว้ก่อนทุกครั้ง')) return;
+  try {
+    const parsed = await parseRestoreSource();
+    if (mode === 'fullJson') {
+      if (parsed.type !== 'json') throw new Error('Restore เต็มระบบต้องใช้ไฟล์ JSON เท่านั้น');
+      await applyFullJsonRestore(parsed.data);
+      toast('Restore เต็มระบบเรียบร้อย');
+    } else if (parsed.type === 'json' && parsed.data?.stock && confirm('พบไฟล์ JSON Backup เต็มระบบ ต้องการ Restore เต็มระบบแทนการดึงเฉพาะ Stock หรือไม่?')) {
+      await applyFullJsonRestore(parsed.data);
+      toast('Restore เต็มระบบเรียบร้อย');
+    } else {
+      const rows = parsed.type === 'json' ? (parsed.data.stock || []) : parsed.rows;
+      const count = await applyStockRestore(rows, mode === 'replaceStock');
+      toast(`Restore Stock แล้ว ${count.toLocaleString('th-TH')} รายการ`);
+    }
+    $('restorePin').value=''; $('restoreConfirmText').value=''; if($('restoreFile')) $('restoreFile').value=''; if($('restoreSheetUrl')) $('restoreSheetUrl').value='';
+    setTimeout(()=>location.reload(), 900);
+  } catch(err) { console.error(err); toast(err.message || 'Restore ไม่สำเร็จ'); }
+}
+
 async function sendDriveBackup() {
   if (!requireOnlineForWrite()) return;
   const url = state.settings.driveWebhookUrl;
