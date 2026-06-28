@@ -1,7 +1,7 @@
 {
   "name": "Love Matcha Stock",
   "short_name": "Love Matcha",
-  "description": "ระบบสต๊อก Love Matcha สำหรับใช้งานบนมือถือและคอมพิวเตอร์ v1.1",
+  "description": "ระบบสต๊อก Love Matcha สำหรับใช้งานบนมือถือและคอมพิวเตอร์ v1.2",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

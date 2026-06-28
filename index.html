@@ -208,10 +208,10 @@
 <script>
 'use strict';
 
-const APP_VERSION = 'LoveMatchaStock-PWA-v1.1';
-const PWA_VERSION = 'v1.1';
+const APP_VERSION = 'LoveMatchaStock-PWA-v1.2';
+const PWA_VERSION = 'v1.2';
 const BASE_PATH = 'loveMatchaStock/v1';
-const STOCK_TEMPLATE_VERSION = 'Stock Matcha Excel 2026-06-28 v1.1';
+const STOCK_TEMPLATE_VERSION = 'Stock Matcha Excel 2026-06-28 v1.2';
 const DEFAULT_BRANCHES = ["หนองคาย", "อุดรธานี", "ศรีราชา", "นครพนม", "ออกบูธ"];
 const DEFAULT_PRODUCTS = ["Kagoshima Midori","Tsuki","Umeji","Okumidori kago","Hinoka","Uji","Hikari","Takumi","Asahi","Okumidori Uji","Yame1","Yame2","Yame Ceremonial","ชาออกบูธ","Roast Light","Roast Medium","Roast Dark","Culinary Grade","มัทฉะ 19","มัทฉะ 20"];
 const DEFAULT_PRODUCT_SIZE_MAP = {"Kagoshima Midori":[40,100,500,1000],"Tsuki":[40,100,500,1000],"Umeji":[40,100,500,1000],"Okumidori kago":[40,100,500,1000],"Hinoka":[40,100,500,1000],"Uji":[40,100,500,1000],"Hikari":[40,100,500,1000],"Takumi":[40,100,500,1000],"Asahi":[40,100,500,1000],"Okumidori Uji":[40,100,500,1000],"Yame1":[40,100,500,1000],"Yame2":[40,100,500,1000],"Yame Ceremonial":[40,100,500,1000],"ชาออกบูธ":[40,100,500,1000],"Roast Light":[40,100,1000],"Roast Medium":[40,100,1000],"Roast Dark":[40,100,1000],"Culinary Grade":[40,100,500,1000],"มัทฉะ 19":[40,100,500,1000],"มัทฉะ 20":[40,100,500,1000]};
@@ -631,7 +631,7 @@ function logout() { currentUser = null; localStorage.removeItem('loveMatcha.sess
 function navItems() {
   const items = [['dashboard','Stock รวม'], ['transaction','ลงรายการ']];
   items.push(['history','ประวัติ']);
-  items.push(['audit','เช็คชาจริง']);
+  items.push(['audit','นับ stock ชาจริง']);
   if (canManageProducts()) items.push(['products','รายการชา']);
   items.push(['users','ผู้ใช้ / เปลี่ยน PIN']);
   if (canOwner()) items.push(['backup','สำรองข้อมูล'], ['settings','ตั้งค่า']);
@@ -729,7 +729,7 @@ function renderStockCards() {
     const sizes = sizesForProduct(p).map(size => {
       const qty = dashboardBranch === 'รวมทุกสาขา' ? stockTotal(p.id, size) : stockQty(dashboardBranch, p.id, size);
       const cls = qty < 0 ? 'bad' : isLowStock(p, qty, size) ? 'low' : '';
-      const content = `<div class="s">${size} gm</div><div class="q">${Number(qty).toLocaleString('th-TH')}</div>${dashboardBranch !== 'รวมทุกสาขา' ? '<div class="quick-hint">แตะเพื่อกรอก</div>' : ''}`;
+      const content = `<div class="s">${size} gm</div><div class="q">${Number(qty).toLocaleString('th-TH')}</div>`;
       if (dashboardBranch === 'รวมทุกสาขา') return `<div class="size-box ${cls}">${content}</div>`;
       return `<div class="size-box clickable ${cls}"><button type="button" class="size-action" data-quick-tx="1" data-branch="${safe(dashboardBranch)}" data-product="${safe(p.id)}" data-size="${safe(size)}" aria-label="กรอกเปลี่ยนแปลง ${safe(p.name)} ${safe(size)} gm สาขา ${safe(dashboardBranch)}">${content}</button></div>`;
     }).join('');
@@ -1011,19 +1011,18 @@ function renderAudit() {
   const defaultBranch = currentUser.branch && currentUser.branch !== 'ทุกสาขา' ? currentUser.branch : branches()[0];
   $('page-audit').innerHTML = `
     <div class="card">
-      <h1>เช็คชาจริงปลายเดือน</h1>
+      <h1>นับ stock ชาจริง</h1>
       <p class="muted">ใช้ตอนนับของจริงในร้าน ระบบจะเทียบกับ Stock ในเว็บทันที แล้วบอกว่าตรง / ขาด / เกินเท่าไร</p>
-      <div class="notice">พนักงานใช้หน้านี้ได้ เพื่อช่วยจับกรณีลืมลง stock หรือกรอกผิด</div>
       <form id="auditForm" class="grid" style="margin-top:12px">
         <div class="grid grid-3">
-          <div class="field"><label>วันที่เช็ค</label><input id="auditDate" type="date" value="${todayInput()}" required></div>
+          <div class="field"><label>วันที่นับ</label><input id="auditDate" type="date" value="${todayInput()}" required></div>
           <div class="field"><label>สาขา</label><select id="auditBranch">${branchOptions}</select></div>
           <div class="field"><label>ชนิดมัทฉะ</label><select id="auditProduct">${pOptions}</select></div>
         </div>
         <div id="auditRows" class="grid"></div>
         <label class="chip" style="justify-content:flex-start"><input id="auditAdjust" type="checkbox" style="width:auto;min-height:0"> ปรับยอด Stock ให้ตรงกับยอดจริงที่นับได้ด้วย</label>
         <div class="field"><label>หมายเหตุ</label><textarea id="auditNote" placeholder="เช่น เช็คสิ้นเดือน, พบถุงแตก, ลืมลงขาย"></textarea></div>
-        <button class="btn full" type="submit">บันทึกผลเช็คชาจริง</button>
+        <button class="btn full" type="submit">บันทึกผลนับ stock ชาจริง</button>
       </form>
     </div>`;
   $('auditBranch').value = defaultBranch;
@@ -1073,12 +1072,12 @@ async function saveAudit(e) {
     const countedQty = Number(inp.value);
     if(Number.isFinite(countedQty) && countedQty >= 0) {
       const variance = countedQty - systemQty;
-      rows.push({branch, productId, productName:p.name, size, systemQty, countedQty, auditVariance:variance, delta: adjust ? variance : 0, qtyAfter: adjust ? countedQty : systemQty, kind: adjust ? 'audit_adjust' : 'audit', reason:'เช็คชาจริงปลายเดือน', note, txDate, auditAdjusted: adjust});
+      rows.push({branch, productId, productName:p.name, size, systemQty, countedQty, auditVariance:variance, delta: adjust ? variance : 0, qtyAfter: adjust ? countedQty : systemQty, kind: adjust ? 'audit_adjust' : 'audit', reason:'นับ stock ชาจริง', note, txDate, auditAdjusted: adjust});
     }
   });
   if(!rows.length) return toast('กรอกจำนวนที่นับจริงอย่างน้อย 1 ขนาด');
   await applyAuditEntries(rows, adjust);
-  toast(adjust ? 'บันทึกผลเช็คและปรับ Stock แล้ว' : 'บันทึกผลเช็คแล้ว');
+  toast(adjust ? 'บันทึกผลนับและปรับ Stock แล้ว' : 'บันทึกผลนับแล้ว');
   activePage = 'history'; renderApp();
 }
 async function applyAuditEntries(rows, adjust) {
@@ -1173,7 +1172,7 @@ function renderHistoryList() {
   const el = $('historyList'); if(!el) return;
   const auditCell = (r) => r.countedQty !== undefined ? `ระบบ ${Number(r.systemQty ?? 0).toLocaleString('th-TH')} / จริง ${Number(r.countedQty ?? 0).toLocaleString('th-TH')} / ${Number(r.auditVariance||0)===0?'ตรง':Number(r.auditVariance)>0?'เกิน +'+Number(r.auditVariance).toLocaleString('th-TH'):'ขาด '+Number(r.auditVariance).toLocaleString('th-TH')}` : '-';
   const transferBadge = (r) => r.transferStatus ? `<div class="small ${r.transferStatus==='problem'?'danger-text':r.transferStatus==='confirmed'?'ok-text':'warn-text'}">โอนสาขา: ${r.transferStatus==='pending'?'รอยืนยัน':r.transferStatus==='confirmed'?'ยืนยันแล้ว':'มีปัญหา'}</div>` : '';
-  el.innerHTML = `<div class="table-wrap"><table><thead><tr><th>วันที่บันทึก</th><th>วันที่ทำรายการ</th><th>ผู้ทำ</th><th>สาขา</th><th>รายการ</th><th class="right">เข้า/ออก</th><th>เหตุผล</th><th>ผลเช็คจริง</th><th>หมายเหตุ</th>${canOwner()?'<th>ซ่อน/แสดง</th>':''}</tr></thead><tbody>${rows.map(r => { const hidden = !!r.hiddenOwnerOnly; return `<tr class="${hidden?'history-hidden-owner':''}"><td>${moneyDate(dateFromFirestore(r.createdAt))}${hidden?'<div class="small danger-text hidden-label">ซ่อนอยู่: เห็นเฉพาะเจ้าของ</div>':''}</td><td>${dateOnlyBE(r.txDate)}</td><td>${safe(r.userName||'-')}</td><td>${safe(r.branch||'-')}</td><td>${safe(r.productName||productName(r.productId))} ${safe(r.size||'')}gm</td><td class="right ${Number(r.delta)<0?'danger-text':Number(r.delta)>0?'ok-text':'muted'}">${Number(r.delta||0)>0?'+':''}${Number(r.delta||0).toLocaleString('th-TH')}</td><td>${safe(r.reason||r.kind||'-')}${transferBadge(r)}</td><td>${safe(auditCell(r))}</td><td>${safe(r.note||'')}${r.transferFrom||r.transferTo?`<div class="small muted">${safe(r.transferFrom||r.branch||'-')} → ${safe(r.transferTo||'-')}</div>`:''}</td>${canOwner()?`<td><button class="btn ${hidden?'':'danger'}" data-history-hide="${r.id}">${hidden?'แสดงรายการนี้':'ซ่อนรายการนี้'}</button></td>`:''}</tr>`; }).join('')}</tbody></table></div>`;
+  el.innerHTML = `<div class="table-wrap"><table><thead><tr><th>วันที่บันทึก</th><th>วันที่ทำรายการ</th><th>ผู้ทำ</th><th>สาขา</th><th>รายการ</th><th class="right">เข้า/ออก</th><th>เหตุผล</th><th>ผลนับจริง</th><th>หมายเหตุ</th>${canOwner()?'<th>ซ่อน/แสดง</th>':''}</tr></thead><tbody>${rows.map(r => { const hidden = !!r.hiddenOwnerOnly; return `<tr class="${hidden?'history-hidden-owner':''}"><td>${moneyDate(dateFromFirestore(r.createdAt))}${hidden?'<div class="small danger-text hidden-label">ซ่อนอยู่: เห็นเฉพาะเจ้าของ</div>':''}</td><td>${dateOnlyBE(r.txDate)}</td><td>${safe(r.userName||'-')}</td><td>${safe(r.branch||'-')}</td><td>${safe(r.productName||productName(r.productId))} ${safe(r.size||'')}gm</td><td class="right ${Number(r.delta)<0?'danger-text':Number(r.delta)>0?'ok-text':'muted'}">${Number(r.delta||0)>0?'+':''}${Number(r.delta||0).toLocaleString('th-TH')}</td><td>${safe(r.reason||r.kind||'-')}${transferBadge(r)}</td><td>${safe(auditCell(r))}</td><td>${safe(r.note||'')}${r.transferFrom||r.transferTo?`<div class="small muted">${safe(r.transferFrom||r.branch||'-')} → ${safe(r.transferTo||'-')}</div>`:''}</td>${canOwner()?`<td><button class="btn ${hidden?'':'danger'}" data-history-hide="${r.id}">${hidden?'แสดงรายการนี้':'ซ่อนรายการนี้'}</button></td>`:''}</tr>`; }).join('')}</tbody></table></div>`;
   if (canOwner()) document.querySelectorAll('[data-history-hide]').forEach(btn => btn.onclick = () => toggleHistoryItemVisibility(btn.dataset.historyHide));
 }
 async function toggleHistoryItemVisibility(id) {
@@ -1420,10 +1419,10 @@ function renderBackup() {
       </div>
     </div>
     <div class="card">
-      <h2>อัปเดต Stock จาก Excel v1.1 ที่แนบมา</h2>
-      <p class="muted">ปุ่มนี้จะนำรายการชา/ขนาด/จำนวนคงเหลือจากไฟล์ Excel ที่ฝังในเวอร์ชัน v1.1 ไปเขียนทับ Stock ปัจจุบันใน Firebase เหมาะสำหรับหลังอัปโหลดไฟล์นี้ครั้งแรก</p>
+      <h2>อัปเดต Stock จาก Excel v1.2 ที่แนบมา</h2>
+      <p class="muted">ปุ่มนี้จะนำรายการชา/ขนาด/จำนวนคงเหลือจากไฟล์ Excel ที่ฝังในเวอร์ชัน v1.2 ไปเขียนทับ Stock ปัจจุบันใน Firebase เหมาะสำหรับหลังอัปโหลดไฟล์นี้ครั้งแรก</p>
       <div class="notice">ต้องใช้ไอดีเจ้าของและกรอก PIN ยืนยันก่อน ระบบจะไม่ลบผู้ใช้หรือประวัติเดิม แต่จะตั้งค่ารายการชาและจำนวน Stock ตาม Excel</div>
-      <div class="btn-row" style="margin-top:12px"><button id="importTemplateStockBtn" class="btn warn">นำเข้า Stock จาก Excel v1.1</button></div>
+      <div class="btn-row" style="margin-top:12px"><button id="importTemplateStockBtn" class="btn warn">นำเข้า Stock จาก Excel v1.2</button></div>
     </div>
     <div class="card">
       <h2>ตั้งค่า Google Drive Auto Backup</h2>
@@ -1510,8 +1509,8 @@ async function restoreBackupJson() {
 async function importEmbeddedStockTemplate() {
   if (!canOwner()) return toast('นำเข้า Stock จาก Excel ทำได้เฉพาะเจ้าของ');
   if (!requireOnlineForWrite()) return;
-  if (!askSelfPin('ยืนยันนำเข้า Stock จาก Excel v1.1\nกรอก PIN ของคุณเอง 4 ตัว')) return;
-  if (!confirm('ระบบจะตั้งค่ารายการชา/ขนาด/จำนวน Stock ตาม Excel v1.1 และเขียนทับจำนวน Stock ปัจจุบันของรายการเหล่านี้ จริงหรือไม่?')) return;
+  if (!askSelfPin('ยืนยันนำเข้า Stock จาก Excel v1.2\nกรอก PIN ของคุณเอง 4 ตัว')) return;
+  if (!confirm('ระบบจะตั้งค่ารายการชา/ขนาด/จำนวน Stock ตาม Excel v1.2 และเขียนทับจำนวน Stock ปัจจุบันของรายการเหล่านี้ จริงหรือไม่?')) return;
   try {
     const products = stockTemplateProducts();
     const stock = stockTemplateDocs(products, branches());
@@ -1519,9 +1518,9 @@ async function importEmbeddedStockTemplate() {
     products.forEach(p => ops.push({type:'set', ref: db.collection(`${BASE_PATH}/products`).doc(p.id), data:{...p, updatedAt: firebase.firestore.FieldValue.serverTimestamp()}, options:{merge:true}}));
     stock.forEach(s => ops.push({type:'set', ref: db.collection(`${BASE_PATH}/stock`).doc(s.id), data:{...s, updatedAt: firebase.firestore.FieldValue.serverTimestamp()}, options:{merge:true}}));
     ops.push({type:'set', ref: db.collection(`${BASE_PATH}/settings`).doc('main'), data:{stockTemplateVersion:STOCK_TEMPLATE_VERSION, updatedAt: firebase.firestore.FieldValue.serverTimestamp()}, options:{merge:true}});
-    ops.push({type:'set', ref: db.collection(`${BASE_PATH}/history`).doc(makeId('hist')), data:{type:'stockTemplateImport', reason:'นำเข้า Stock จาก Excel v1.1', note:STOCK_TEMPLATE_VERSION, userId:currentUser.id, userName:currentUser.name, role:currentUser.role, branch:'ทุกสาขา', txDate:todayInput(), createdAt:firebase.firestore.FieldValue.serverTimestamp(), appVersion:APP_VERSION}, options:{merge:false}});
+    ops.push({type:'set', ref: db.collection(`${BASE_PATH}/history`).doc(makeId('hist')), data:{type:'stockTemplateImport', reason:'นำเข้า Stock จาก Excel v1.2', note:STOCK_TEMPLATE_VERSION, userId:currentUser.id, userName:currentUser.name, role:currentUser.role, branch:'ทุกสาขา', txDate:todayInput(), createdAt:firebase.firestore.FieldValue.serverTimestamp(), appVersion:APP_VERSION}, options:{merge:false}});
     await commitFirestoreOps(ops);
-    toast('นำเข้า Stock จาก Excel v1.1 แล้ว');
+    toast('นำเข้า Stock จาก Excel v1.2 แล้ว');
   } catch(err) { console.error(err); toast('นำเข้า Stock จาก Excel ไม่สำเร็จ'); }
 }
 
