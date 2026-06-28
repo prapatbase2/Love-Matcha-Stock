@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#356B23">
+  <meta name="description" content="Love Matcha Stock PWA v1.0.0">
+  <link rel="manifest" href="./manifest.json">
+  <link rel="apple-touch-icon" href="./assets/icons/icon-192.png">
+  <link rel="icon" href="./assets/icons/icon-192.png">
+  <link rel="stylesheet" href="./styles.css">
+  <title>Love Matcha Stock</title>
+</head>
+<body>
+  <noscript>กรุณาเปิดใช้งาน JavaScript เพื่อใช้ระบบ Love Matcha Stock</noscript>
+
+  <div id="boot" class="boot">
+    <img src="./assets/logo.jpg" alt="Love Matcha" class="boot-logo">
+    <h1>Love Matcha Stock</h1>
+    <p>กำลังเตรียมระบบ...</p>
+  </div>
+
+  <section id="loginView" class="login-view hidden">
+    <div class="login-card">
+      <img src="./assets/logo.jpg" alt="Love Matcha" class="login-logo" id="loginLogo">
+      <h1>Love Matcha Stock</h1>
+      <p class="muted center">ระบบสต๊อกมัทฉะ realtime · v1.0.0</p>
+
+      <div id="setupBox" class="setup-box hidden"></div>
+
+      <form id="loginForm" class="stack">
+        <label>เลือกผู้ใช้
+          <select id="loginUser"></select>
+        </label>
+        <label>PIN 4 ตัว
+          <input id="loginPin" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" placeholder="••••" autocomplete="current-password">
+        </label>
+        <div class="check-row">
+          <label><input type="checkbox" id="rememberUser"> จำ user นี้</label>
+          <label><input type="checkbox" id="rememberPin"> จำ PIN บนเครื่องนี้</label>
+        </div>
+        <button id="loginButton" type="submit" class="primary full">เข้าสู่ระบบ</button>
+      </form>
+
+      <div class="note">
+        ค่าเริ่มต้นหลัง seed ข้อมูล: <b>เจ้าของ / PIN 1234</b><br>
+        ระบบจะเตือนให้เปลี่ยน PIN หลังเข้าใช้งานครั้งแรก
+      </div>
+    </div>
+  </section>
+
+  <section id="appShell" class="app-shell hidden">
+    <header class="topbar">
+      <button id="menuRefresh" class="icon-btn" title="โหลดใหม่">↻</button>
+      <div class="brand">
+        <img id="appLogo" src="./assets/logo.jpg" alt="Love Matcha">
+        <div>
+          <b>Love Matcha Stock</b>
+          <small id="currentContext">v1.0.0</small>
+        </div>
+      </div>
+      <div class="top-actions">
+        <span id="onlineBadge" class="status-badge">ออนไลน์</span>
+        <button id="logoutBtn" class="ghost small">ออก</button>
+      </div>
+    </header>
+
+    <main id="main"></main>
+
+    <nav class="bottom-nav" aria-label="เมนูหลัก">
+      <button data-route="dashboard" class="nav-btn active">🏠<span>หน้าแรก</span></button>
+      <button data-route="stock" class="nav-btn">📦<span>สต๊อก</span></button>
+      <button data-route="action" class="nav-btn">➕<span>เพิ่ม-ลด</span></button>
+      <button data-route="transfers" class="nav-btn">🔁<span>โอน</span></button>
+      <button data-route="history" class="nav-btn">🧾<span>ประวัติ</span></button>
+      <button data-route="settings" class="nav-btn">⚙️<span>ตั้งค่า</span></button>
+    </nav>
+  </section>
+
+  <div id="toastRoot" class="toast-root"></div>
+  <div id="modalRoot"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js" defer></script>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
