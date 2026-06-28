@@ -100,6 +100,14 @@
     .size-box.bad { background: #ffeceb; border-color: #ffb7b3; }
     .size-box .s { color: var(--muted); font-size: .78rem; font-weight: 800; }
     .size-box .q { font-weight: 950; font-size: 1.25rem; }
+
+    .size-action { appearance:none; border:0; background:transparent; color:inherit; width:100%; padding:0; display:block; text-align:center; cursor:pointer; }
+    .size-box.clickable { border-color: color-mix(in srgb, var(--brand) 58%, var(--line)); background: color-mix(in srgb, var(--brand-2) 64%, #fff); }
+    .size-box.clickable .q { text-decoration: underline; text-underline-offset: 3px; }
+    .quick-hint { color: var(--brand); font-size: .72rem; font-weight: 900; margin-top: 2px; }
+    .pending-transfer { border:2px solid #ffc36a; background:#fffaf0; }
+    .pending-transfer.confirmed { border-color:#9ed3a8; background:#f1fbf3; }
+    .pending-transfer.problem { border-color:#ffb7b3; background:#fff5f5; }
     .table-wrap { overflow-x: auto; border-radius: 16px; border: 1px solid var(--line); background: #fff; }
     table { width: 100%; border-collapse: collapse; min-width: 820px; }
     th, td { padding: 11px 10px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
@@ -200,13 +208,15 @@
 <script>
 'use strict';
 
-const APP_VERSION = 'LoveMatchaStock-PWA-v1.0';
-const PWA_VERSION = 'v1.0';
+const APP_VERSION = 'LoveMatchaStock-PWA-v1.1';
+const PWA_VERSION = 'v1.1';
 const BASE_PATH = 'loveMatchaStock/v1';
+const STOCK_TEMPLATE_VERSION = 'Stock Matcha Excel 2026-06-28 v1.1';
 const DEFAULT_BRANCHES = ["หนองคาย", "อุดรธานี", "ศรีราชา", "นครพนม", "ออกบูธ"];
-const DEFAULT_PRODUCTS = ["Kagoshima Midori", "Tsuki", "Umeji", "Okumidori kago", "Hinoka", "Uji", "Hikari", "Takumi", "Asahi", "Okumidori Uji", "Yame1", "Yame2", "Yame Ceremonial", "ชาออกบูธ", "Roast Light", "Roast Medium", "Roast Dark", "Culinary Grade"];
+const DEFAULT_PRODUCTS = ["Kagoshima Midori","Tsuki","Umeji","Okumidori kago","Hinoka","Uji","Hikari","Takumi","Asahi","Okumidori Uji","Yame1","Yame2","Yame Ceremonial","ชาออกบูธ","Roast Light","Roast Medium","Roast Dark","Culinary Grade","มัทฉะ 19","มัทฉะ 20"];
+const DEFAULT_PRODUCT_SIZE_MAP = {"Kagoshima Midori":[40,100,500,1000],"Tsuki":[40,100,500,1000],"Umeji":[40,100,500,1000],"Okumidori kago":[40,100,500,1000],"Hinoka":[40,100,500,1000],"Uji":[40,100,500,1000],"Hikari":[40,100,500,1000],"Takumi":[40,100,500,1000],"Asahi":[40,100,500,1000],"Okumidori Uji":[40,100,500,1000],"Yame1":[40,100,500,1000],"Yame2":[40,100,500,1000],"Yame Ceremonial":[40,100,500,1000],"ชาออกบูธ":[40,100,500,1000],"Roast Light":[40,100,1000],"Roast Medium":[40,100,1000],"Roast Dark":[40,100,1000],"Culinary Grade":[40,100,500,1000],"มัทฉะ 19":[40,100,500,1000],"มัทฉะ 20":[40,100,500,1000]};
 const DEFAULT_SIZES = [40, 100, 500, 1000];
-const INITIAL_STOCK = {"หนองคาย": {"Kagoshima Midori": {"40": 0, "100": 0, "500": 0, "1000": 27}, "Tsuki": {"40": 14, "100": 0, "500": 0, "1000": 31}, "Umeji": {"40": 8, "100": 0, "500": 0, "1000": 1}, "Okumidori kago": {"40": 0, "100": 0, "500": 22, "1000": 0}, "Hinoka": {"40": 1, "100": 2, "500": 0, "1000": 22}, "Uji": {"40": 7, "100": 0, "500": 0, "1000": 31}, "Hikari": {"40": 24, "100": 0, "500": 0, "1000": 7}, "Takumi": {"40": 12, "100": 0, "500": 0, "1000": 16}, "Asahi": {"40": 10, "100": 0, "500": 0, "1000": 18}, "Okumidori Uji": {"40": 0, "100": 8, "500": 0, "1000": 0}, "Yame1": {"40": 6, "100": 0, "500": 0, "1000": 8}, "Yame2": {"40": 5, "100": 0, "500": 0, "1000": 11}, "Yame Ceremonial": {"40": 11, "100": 0, "500": 0, "1000": 18}, "ชาออกบูธ": {"40": 0, "100": 0, "500": 22, "1000": 0}, "Roast Light": {"40": 0, "100": 0, "500": 0, "1000": 3}, "Roast Medium": {"40": 0, "100": 0, "500": 0, "1000": 3}, "Roast Dark": {"40": 0, "100": 0, "500": 0, "1000": 3}, "Culinary Grade": {"40": 0, "100": 0, "500": 0, "1000": 41}}, "อุดรธานี": {"Kagoshima Midori": {"40": 7, "100": 6, "500": 0, "1000": 0}, "Tsuki": {"40": 4, "100": 3, "500": 0, "1000": 0}, "Umeji": {"40": 2, "100": 0, "500": 0, "1000": 0}, "Okumidori kago": {"40": 4, "100": 0, "500": 0, "1000": 0}, "Hinoka": {"40": 2, "100": 2, "500": 0, "1000": 0}, "Uji": {"40": 3, "100": 4, "500": 0, "1000": 0}, "Hikari": {"40": 4, "100": 0, "500": 0, "1000": 0}, "Takumi": {"40": 2, "100": 1, "500": 0, "1000": 0}, "Asahi": {"40": 3, "100": 0, "500": 0, "1000": 0}, "Okumidori Uji": {"40": 0, "100": 0, "500": 0, "1000": 0}, "Yame1": {"40": 1, "100": 0, "500": 0, "1000": 0}, "Yame2": {"40": 1, "100": 0, "500": 0, "1000": 0}, "Yame Ceremonial": {"40": 4, "100": 0, "500": 0, "1000": 0}, "ชาออกบูธ": {"40": 0, "100": 0, "500": 0, "1000": 0}, "Roast Light": {"40": 0, "100": 0, "500": 0, "1000": 0}, "Roast Medium": {"40": 0, "100": 0, "500": 0, "1000": 0}, "Roast Dark": {"40": 0, "100": 0, "500": 0, "1000": 0}, "Culinary Grade": {"40": 0, "100": 0, "500": -1, "1000": 0}}, "ศรีราชา": {"Kagoshima Midori": {"40": 1, "100": 1, "500": 0, "1000": 0}, "Tsuki": {"40": 2, "100": 1, "500": 0, "1000": 0}, "Umeji": {"40": 3, "100": 0, "500": 0, "1000": 0}, "Okumidori kago": {"40": 1, "100": 3, "500": 0, "1000": 0}, "Hinoka": {"40": 0, "100": 2, "500": 0, "1000": 0}, "Uji": {"40": 0, "100": 0, "500": 0, "1000": 0}, "Hikari": {"40": 2, "100": 2, "500": 0, "1000": 0}, "Takumi": {"40": 1, "100": 0, "500": 0, "1000": 0}, "Asahi": {"40": 2, "100": 0, "500": 0, "1000": 0}, "Okumidori Uji": {"40": 0, "100": 0, "500": 0, "1000": 0}, "Yame1": {"40": 1, "100": 0, "500": 0, "1000": 0}, "Yame2": {"40": 2, "100": 0, "500": 0, "1000": 0}, "Yame Ceremonial": {"40": 1, "100": 0, "500": 0, "1000": 0}, "ชาออกบูธ": {"40": 0, "100": 0, "500": 0, "1000": 0}, "Roast Light": {"40": 0, "100": 0, "500": 0, "1000": 0}, "Roast Medium": {"40": 0, "100": 0, "500": 0, "1000": 0}, "Roast Dark": {"40": 0, "100": 0, "500": 0, "1000": 0}, "Culinary Grade": {"40": 0, "100": 0, "500": 0, "1000": 0}}, "นครพนม": {"Kagoshima Midori": {"40": 6, "100": 0, "500": 0, "1000": 1}, "Tsuki": {"40": 1, "100": 2, "500": 0, "1000": 1}, "Umeji": {"40": 5, "100": 0, "500": 0, "1000": 0}, "Okumidori kago": {"40": 5, "100": 0, "500": 1, "1000": 0}, "Hinoka": {"40": 5, "100": 1, "500": 0, "1000": 1}, "Uji": {"40": 3, "100": 1, "500": 0, "1000": 2}, "Hikari": {"40": 6, "100": 0, "500": 0, "1000": 0}, "Takumi": {"40": 4, "100": 0, "500": 1, "1000": 0}, "Asahi": {"40": 5, "100": 0, "500": 0, "1000": 0}, "Okumidori Uji": {"40": 0, "100": 1, "500": -1, "1000": 0}, "Yame1": {"40": 4, "100": 2, "500": 0, "1000": 1}, "Yame2": {"40": 5, "100": 2, "500": 1, "1000": 0}, "Yame Ceremonial": {"40": 5, "100": 0, "500": 0, "1000": 1}, "ชาออกบูธ": {"40": 0, "100": 0, "500": 0, "1000": 0}, "Roast Light": {"40": 0, "100": 0, "500": 0, "1000": 0}, "Roast Medium": {"40": 0, "100": 0, "500": 0, "1000": 0}, "Roast Dark": {"40": 0, "100": 0, "500": 0, "1000": 0}, "Culinary Grade": {"40": 0, "100": 0, "500": 0, "1000": 0}}, "ออกบูธ": {"Kagoshima Midori": {"40": 3, "100": 0, "500": 0, "1000": 0}, "Tsuki": {"40": 7, "100": 2, "500": 0, "1000": 0}, "Umeji": {"40": 23, "100": 0, "500": 0, "1000": 0}, "Okumidori kago": {"40": 17, "100": 1, "500": 0, "1000": 0}, "Hinoka": {"40": 7, "100": 0, "500": 0, "1000": 0}, "Uji": {"40": 14, "100": 0, "500": 0, "1000": 0}, "Hikari": {"40": 4, "100": 5, "500": 0, "1000": 0}, "Takumi": {"40": 9, "100": 0, "500": 0, "1000": 0}, "Asahi": {"40": 16, "100": 0, "500": 0, "1000": 0}, "Okumidori Uji": {"40": 0, "100": 1, "500": 0, "1000": 0}, "Yame1": {"40": 10, "100": 1, "500": 0, "1000": 0}, "Yame2": {"40": 16, "100": 0, "500": 0, "1000": 0}, "Yame Ceremonial": {"40": 18, "100": 2, "500": 0, "1000": 0}, "ชาออกบูธ": {"40": 0, "100": 0, "500": 1, "1000": 0}, "Roast Light": {"40": 0, "100": 0, "500": 0, "1000": 0}, "Roast Medium": {"40": 0, "100": 0, "500": 0, "1000": 0}, "Roast Dark": {"40": 0, "100": 0, "500": 0, "1000": 0}, "Culinary Grade": {"40": 0, "100": 0, "500": 0, "1000": 0}}};
+const INITIAL_STOCK = {"หนองคาย":{"Kagoshima Midori":{"40":3,"100":0,"500":0,"1000":21},"Tsuki":{"40":14,"100":0,"500":0,"1000":31},"Umeji":{"40":8,"100":0,"500":0,"1000":1},"Okumidori kago":{"40":0,"100":0,"500":22,"1000":0},"Hinoka":{"40":4,"100":1,"500":0,"1000":21},"Uji":{"40":7,"100":0,"500":0,"1000":30},"Hikari":{"40":24,"100":0,"500":0,"1000":7},"Takumi":{"40":10,"100":0,"500":0,"1000":16},"Asahi":{"40":10,"100":0,"500":0,"1000":18},"Okumidori Uji":{"40":0,"100":8,"500":0,"1000":0},"Yame1":{"40":2,"100":0,"500":0,"1000":8},"Yame2":{"40":5,"100":0,"500":0,"1000":10},"Yame Ceremonial":{"40":9,"100":0,"500":0,"1000":18},"ชาออกบูธ":{"40":0,"100":0,"500":22,"1000":0},"Roast Light":{"40":0,"100":0,"1000":3},"Roast Medium":{"40":0,"100":0,"1000":3},"Roast Dark":{"40":0,"100":0,"1000":3},"Culinary Grade":{"40":0,"100":0,"500":0,"1000":41},"มัทฉะ 19":{"40":0,"100":0,"500":0,"1000":0},"มัทฉะ 20":{"40":0,"100":0,"500":0,"1000":0}},"อุดรธานี":{"Kagoshima Midori":{"40":4,"100":7,"500":0,"1000":0},"Tsuki":{"40":4,"100":3,"500":0,"1000":0},"Umeji":{"40":2,"100":0,"500":0,"1000":0},"Okumidori kago":{"40":4,"100":0,"500":0,"1000":0},"Hinoka":{"40":2,"100":1,"500":0,"1000":0},"Uji":{"40":3,"100":4,"500":0,"1000":0},"Hikari":{"40":4,"100":0,"500":0,"1000":0},"Takumi":{"40":2,"100":1,"500":0,"1000":0},"Asahi":{"40":3,"100":0,"500":0,"1000":0},"Okumidori Uji":{"40":0,"100":0,"500":0,"1000":0},"Yame1":{"40":2,"100":0,"500":0,"1000":0},"Yame2":{"40":3,"100":0,"500":0,"1000":0},"Yame Ceremonial":{"40":4,"100":0,"500":0,"1000":0},"ชาออกบูธ":{"40":0,"100":0,"500":0,"1000":0},"Roast Light":{"40":0,"100":0,"1000":0},"Roast Medium":{"40":0,"100":0,"1000":0},"Roast Dark":{"40":0,"100":0,"1000":0},"Culinary Grade":{"40":0,"100":0,"500":0,"1000":0},"มัทฉะ 19":{"40":0,"100":0,"500":0,"1000":0},"มัทฉะ 20":{"40":0,"100":0,"500":0,"1000":0}},"ศรีราชา":{"Kagoshima Midori":{"40":4,"100":2,"500":0,"1000":0},"Tsuki":{"40":2,"100":1,"500":0,"1000":0},"Umeji":{"40":3,"100":0,"500":0,"1000":0},"Okumidori kago":{"40":1,"100":3,"500":0,"1000":0},"Hinoka":{"40":3,"100":2,"500":0,"1000":0},"Uji":{"40":0,"100":0,"500":0,"1000":0},"Hikari":{"40":1,"100":2,"500":0,"1000":0},"Takumi":{"40":3,"100":0,"500":0,"1000":0},"Asahi":{"40":2,"100":0,"500":0,"1000":0},"Okumidori Uji":{"40":0,"100":0,"500":0,"1000":0},"Yame1":{"40":4,"100":2,"500":0,"1000":0},"Yame2":{"40":2,"100":0,"500":0,"1000":0},"Yame Ceremonial":{"40":2,"100":0,"500":0,"1000":0},"ชาออกบูธ":{"40":0,"100":0,"500":0,"1000":0},"Roast Light":{"40":0,"100":0,"1000":0},"Roast Medium":{"40":0,"100":0,"1000":0},"Roast Dark":{"40":0,"100":0,"1000":0},"Culinary Grade":{"40":0,"100":0,"500":0,"1000":0},"มัทฉะ 19":{"40":0,"100":0,"500":0,"1000":0},"มัทฉะ 20":{"40":0,"100":0,"500":0,"1000":0}},"นครพนม":{"Kagoshima Midori":{"40":6,"100":0,"500":0,"1000":1},"Tsuki":{"40":1,"100":2,"500":0,"1000":0},"Umeji":{"40":3,"100":0,"500":0,"1000":0},"Okumidori kago":{"40":5,"100":0,"500":1,"1000":0},"Hinoka":{"40":5,"100":1,"500":0,"1000":1},"Uji":{"40":2,"100":1,"500":0,"1000":1},"Hikari":{"40":6,"100":0,"500":0,"1000":0},"Takumi":{"40":4,"100":0,"500":1,"1000":0},"Asahi":{"40":5,"100":0,"500":0,"1000":0},"Okumidori Uji":{"40":0,"100":1,"500":0,"1000":0},"Yame1":{"40":4,"100":2,"500":0,"1000":1},"Yame2":{"40":5,"100":2,"500":1,"1000":0},"Yame Ceremonial":{"40":5,"100":0,"500":0,"1000":1},"ชาออกบูธ":{"40":0,"100":0,"500":0,"1000":0},"Roast Light":{"40":0,"100":0,"1000":0},"Roast Medium":{"40":0,"100":0,"1000":0},"Roast Dark":{"40":0,"100":0,"1000":0},"Culinary Grade":{"40":0,"100":0,"500":0,"1000":0},"มัทฉะ 19":{"40":0,"100":0,"500":0,"1000":0},"มัทฉะ 20":{"40":0,"100":0,"500":0,"1000":0}},"ออกบูธ":{"Kagoshima Midori":{"40":3,"100":0,"500":0,"1000":0},"Tsuki":{"40":7,"100":2,"500":0,"1000":0},"Umeji":{"40":23,"100":0,"500":0,"1000":0},"Okumidori kago":{"40":17,"100":1,"500":0,"1000":0},"Hinoka":{"40":7,"100":0,"500":0,"1000":0},"Uji":{"40":14,"100":0,"500":0,"1000":0},"Hikari":{"40":4,"100":5,"500":0,"1000":0},"Takumi":{"40":9,"100":0,"500":0,"1000":0},"Asahi":{"40":16,"100":0,"500":0,"1000":0},"Okumidori Uji":{"40":0,"100":1,"500":0,"1000":0},"Yame1":{"40":10,"100":0,"500":0,"1000":0},"Yame2":{"40":16,"100":0,"500":0,"1000":0},"Yame Ceremonial":{"40":18,"100":1,"500":0,"1000":0},"ชาออกบูธ":{"40":0,"100":0,"500":1,"1000":0},"Roast Light":{"40":0,"100":0,"1000":0},"Roast Medium":{"40":0,"100":0,"1000":0},"Roast Dark":{"40":0,"100":0,"1000":0},"Culinary Grade":{"40":0,"100":0,"500":0,"1000":0},"มัทฉะ 19":{"40":0,"100":0,"500":0,"1000":0},"มัทฉะ 20":{"40":0,"100":0,"500":0,"1000":0}}};
 const EMBEDDED_FIREBASE_CONFIG = {
   apiKey: "AIzaSyDOx86mDHUk1fQSd9antL8rQ6oInwDafhQ",
   authDomain: "love-matcha-stock.firebaseapp.com",
@@ -256,6 +266,7 @@ function applyOfflineLock() {
     '#txForm button[type="submit"]', '#auditForm button[type="submit"]',
     '#page-products button', '#page-users button', '#page-settings button',
     '#page-history [data-history-hide]', '#saveBackupSettingsBtn', '#sendDriveBtn',
+    '#restoreJsonBtn', '#importTemplateStockBtn', '[data-confirm-transfer]', '[data-problem-transfer]',
     '#saveFirebaseConfigBtn', '#clearFirebaseConfigBtn'
   ];
   document.querySelectorAll(selectors.join(',')).forEach(el => {
@@ -378,21 +389,29 @@ function defaultSettings() {
   };
 }
 
-function createSeedData() {
-  const products = DEFAULT_PRODUCTS.map((name, idx) => ({
-    id: productIdFromName(name), name, sizes: DEFAULT_SIZES, alert: 0, alerts: defaultAlerts(), active: true, order: idx + 1, createdAt: nowIso()
-  }));
-  const users = [{ id:'owner', name:'เจ้าของ', role:'owner', branch:'ทุกสาขา', pin:'9999', active:true, createdAt: nowIso() }];
+function stockTemplateProducts() {
+  return DEFAULT_PRODUCTS.map((name, idx) => {
+    const sizes = normalizeSizes(DEFAULT_PRODUCT_SIZE_MAP[name] || DEFAULT_SIZES);
+    return { id: productIdFromName(name), name, sizes, alert: 0, alerts: defaultAlerts(sizes), active: true, order: idx + 1, createdAt: nowIso() };
+  });
+}
+function stockTemplateDocs(products = stockTemplateProducts(), branchList = DEFAULT_BRANCHES) {
   const stock = [];
-  for (const branch of DEFAULT_BRANCHES) {
+  for (const branch of branchList) {
     for (const p of products) {
-      for (const size of DEFAULT_SIZES) {
+      for (const size of sizesForProduct(p)) {
         const qty = Number(INITIAL_STOCK?.[branch]?.[p.name]?.[String(size)] ?? 0);
         stock.push({ id: stockDocId(branch, p.id, size), branch, productId: p.id, productName: p.name, size: Number(size), qty, updatedAt: nowIso() });
       }
     }
   }
-  return { users, products, stock, history: [], settings: {...defaultSettings(), initialized:true} };
+  return stock;
+}
+function createSeedData() {
+  const products = stockTemplateProducts();
+  const users = [{ id:'owner', name:'เจ้าของ', role:'owner', branch:'ทุกสาขา', pin:'9999', active:true, createdAt: nowIso() }];
+  const stock = stockTemplateDocs(products, DEFAULT_BRANCHES);
+  return { users, products, stock, history: [], settings: {...defaultSettings(), initialized:true, stockTemplateVersion: STOCK_TEMPLATE_VERSION} };
 }
 
 function toast(msg) {
@@ -577,7 +596,14 @@ function afterStateReady() {
 }
 
 function showLogin() { $('loginView').classList.remove('hidden'); $('appView').classList.add('hidden'); renderLoginUsers(); }
-function showApp() { $('loginView').classList.add('hidden'); $('appView').classList.remove('hidden'); renderApp(); startAutoBackup(); }
+function showApp() {
+  $('loginView').classList.add('hidden');
+  $('appView').classList.remove('hidden');
+  const home = userHomeBranch();
+  dashboardBranch = home || 'รวมทุกสาขา';
+  renderApp();
+  startAutoBackup();
+}
 
 function renderLoginUsers() {
   const sel = $('loginUser'); if (!sel) return;
@@ -628,8 +654,17 @@ function renderApp() {
   applyOfflineLock();
 }
 
-function activeProducts() { return state.products.filter(p => p.active !== false).sort((a,b)=>(a.order||0)-(b.order||0)); }
+function activeProducts() { return state.products.filter(p => p.active !== false).sort((a,b)=>(a.order||0)-(b.order||0) || (a.name||'').localeCompare(b.name||'')); }
 function branches() { return state.settings?.branches?.length ? state.settings.branches : DEFAULT_BRANCHES; }
+function userHomeBranch() { return currentUser?.branch && currentUser.branch !== 'ทุกสาขา' && branches().includes(currentUser.branch) ? currentUser.branch : ''; }
+function dashboardBranchChoices() {
+  const home = userHomeBranch();
+  return [...new Set([home, 'รวมทุกสาขา', ...branches()].filter(Boolean))];
+}
+function ensureDashboardBranch() {
+  const choices = dashboardBranchChoices();
+  if (!choices.includes(dashboardBranch)) dashboardBranch = choices[0] || 'รวมทุกสาขา';
+}
 function stockQty(branch, productId, size) { return Number(state.stock.find(s => s.branch===branch && s.productId===productId && Number(s.size)===Number(size))?.qty || 0); }
 function stockTotal(productId, size) { return branches().reduce((sum,b) => sum + stockQty(b, productId, size), 0); }
 function productName(productId) { return byId(state.products, productId)?.name || productId; }
@@ -643,12 +678,14 @@ function dateFromFirestore(v) {
 
 function renderDashboard() {
   if (activePage !== 'dashboard') return;
+  ensureDashboardBranch();
   const products = activeProducts();
   const totalPacks = state.stock.reduce((a,s)=>a+Number(s.qty||0),0);
   const totalGrams = state.stock.reduce((a,s)=>a+Number(s.qty||0)*Number(s.size||0),0);
   const lowCount = state.stock.filter(s => { const p = byId(state.products, s.productId); return p && isLowStock(p, s.qty, s.size); }).length;
   const negCount = state.stock.filter(s => Number(s.qty) < 0).length;
-  const branchChoices = ['รวมทุกสาขา', ...branches()];
+  const branchChoices = dashboardBranchChoices();
+  const homeBranch = userHomeBranch();
   const searchValue = sessionStorage.getItem('loveMatcha.dashboardSearch') || '';
   $('page-dashboard').innerHTML = `
     <div class="card">
@@ -662,7 +699,7 @@ function renderDashboard() {
       </div>
     </div>
     <div class="card">
-      <div class="branch-tabs" id="branchTabs">${branchChoices.map(b => `<button class="chip ${dashboardBranch===b?'active':''}" data-branch="${safe(b)}">${safe(b)}</button>`).join('')}</div>
+      <div class="branch-tabs" id="branchTabs">${branchChoices.map(b => `<button class="chip ${dashboardBranch===b?'active':''}" data-branch="${safe(b)}">${safe(b)}${b===homeBranch?' <span class="version-pill">สาขาของคุณ</span>':''}</button>`).join('')}</div>
       <div class="current-view-banner">ตอนนี้อยู่หน้า: ${safe(dashboardBranch)}</div>
       <div class="grid grid-2" style="margin-top:10px">
         <div class="field"><label>ค้นหาชื่อชา</label><input id="dashboardSearch" value="${safe(searchValue)}" placeholder="เช่น Uji, Yame, Roast"></div>
@@ -689,13 +726,56 @@ function renderStockCards() {
     }));
   }
   el.innerHTML = products.map(p => {
-    const sizes = (p.sizes || DEFAULT_SIZES).map(size => {
+    const sizes = sizesForProduct(p).map(size => {
       const qty = dashboardBranch === 'รวมทุกสาขา' ? stockTotal(p.id, size) : stockQty(dashboardBranch, p.id, size);
       const cls = qty < 0 ? 'bad' : isLowStock(p, qty, size) ? 'low' : '';
-      return `<div class="size-box ${cls}"><div class="s">${size} gm</div><div class="q">${Number(qty).toLocaleString('th-TH')}</div></div>`;
+      const content = `<div class="s">${size} gm</div><div class="q">${Number(qty).toLocaleString('th-TH')}</div>${dashboardBranch !== 'รวมทุกสาขา' ? '<div class="quick-hint">แตะเพื่อกรอก</div>' : ''}`;
+      if (dashboardBranch === 'รวมทุกสาขา') return `<div class="size-box ${cls}">${content}</div>`;
+      return `<div class="size-box clickable ${cls}"><button type="button" class="size-action" data-quick-tx="1" data-branch="${safe(dashboardBranch)}" data-product="${safe(p.id)}" data-size="${safe(size)}" aria-label="กรอกเปลี่ยนแปลง ${safe(p.name)} ${safe(size)} gm สาขา ${safe(dashboardBranch)}">${content}</button></div>`;
     }).join('');
     return `<div class="stock-card"><div class="stock-head"><div><div class="stock-title">${safe(p.name)}</div><div class="small muted">แจ้งเตือน: ${safe(alertSummary(p))}</div></div></div><div class="size-grid">${sizes}</div></div>`;
   }).join('') || '<div class="notice">ไม่พบรายการที่ค้นหา</div>';
+  document.querySelectorAll('[data-quick-tx]').forEach(btn => btn.onclick = () => openQuickTransaction(btn.dataset.branch, btn.dataset.product, Number(btn.dataset.size)));
+}
+function openQuickTransaction(branch, productId, size) {
+  sessionStorage.setItem('loveMatcha.prefillTx', JSON.stringify({branch, productId, size}));
+  activePage = 'transaction';
+  renderApp();
+}
+
+
+function pendingTransfers() {
+  return state.history.filter(r => r && r.transferStatus === 'pending' && r.transferTo && canSeeHistoryRow(r))
+    .sort((a,b)=>dateFromFirestore(b.createdAt).localeCompare(dateFromFirestore(a.createdAt)));
+}
+function canConfirmTransfer(r) {
+  if (!currentUser || !r || r.transferStatus !== 'pending') return false;
+  if (canOwner() || currentUser.role === 'manager') return true;
+  return currentUser.branch && currentUser.branch === r.transferTo;
+}
+function renderPendingTransfersPanel() {
+  const rows = pendingTransfers();
+  if (!rows.length) return '';
+  return `<div class="card">
+    <h2>รายการส่งข้ามสาขารอยืนยันรับเข้า</h2>
+    <p class="muted">ปลายทางต้องตรวจว่าจำนวนและชนิดชาตรงก่อนกด “ยืนยันรับเข้า Stock” ระบบจึงจะบวกเข้าสต๊อกสาขาปลายทาง</p>
+    <div class="grid">${rows.map(r => {
+      const qty = Math.abs(Number(r.delta || 0));
+      const can = canConfirmTransfer(r);
+      return `<div class="stock-card pending-transfer">
+        <div class="stock-head">
+          <div>
+            <div class="stock-title">${safe(r.transferFrom || r.branch)} → ${safe(r.transferTo)}</div>
+            <div class="small muted">${safe(r.productName || productName(r.productId))} • ${safe(r.size)}gm • จำนวน ${qty.toLocaleString('th-TH')} • วันที่ ${dateOnlyBE(r.txDate)}</div>
+            <div class="small muted">ผู้ส่ง: ${safe(r.userName || '-')} • หมายเหตุ: ${safe(r.note || '-')}</div>
+          </div>
+        </div>
+        <div class="btn-row">
+          ${can ? `<button class="btn" data-confirm-transfer="${safe(r.id)}">ยืนยันรับเข้า Stock</button><button class="btn danger" data-problem-transfer="${safe(r.id)}">ไม่ตรง / แจ้งปัญหา</button>` : `<span class="chip">รอปลายทาง ${safe(r.transferTo)} ยืนยัน</span>`}
+        </div>
+      </div>`;
+    }).join('')}</div>
+  </div>`;
 }
 
 function renderTransaction() {
@@ -704,6 +784,7 @@ function renderTransaction() {
   const pOptions = activeProducts().map(p => `<option value="${p.id}">${safe(p.name)}</option>`).join('');
   const defaultBranch = currentUser.branch && currentUser.branch !== 'ทุกสาขา' ? currentUser.branch : branches()[0];
   $('page-transaction').innerHTML = `
+    ${renderPendingTransfersPanel()}
     <div class="card">
       <h1>ลงรายการเข้า / ออก / นับใหม่</h1>
       <p class="muted">ออกแบบให้กดง่ายบนมือถือ: เลือกสาขา → เลือกชา → เลือกขนาด → กรอกจำนวน → บันทึก</p>
@@ -742,7 +823,8 @@ function renderTransaction() {
         <button class="btn full" type="submit">บันทึกรายการ</button>
       </form>
     </div>`;
-  $('txBranch').value = defaultBranch;
+  const prefillTx = JSON.parse(sessionStorage.getItem('loveMatcha.prefillTx') || 'null');
+  $('txBranch').value = prefillTx?.branch && branches().includes(prefillTx.branch) ? prefillTx.branch : defaultBranch;
   const updateSizeOptions = () => {
     const p = byId(state.products, $('txProduct').value);
     const old = $('txSize').value;
@@ -779,8 +861,14 @@ function renderTransaction() {
   $('txProduct').onchange = () => { updateSizeOptions(); updateSpecialBoxes(); updateCurrentQty(); };
   ['txBranch','txSize'].forEach(id => $(id).onchange = () => { updateSpecialBoxes(); updateCurrentQty(); });
   const repackDeduct = $('repackDeduct'); if (repackDeduct) repackDeduct.onchange = (e) => $('repackDeductFields').classList.toggle('hidden', !e.target.checked);
+  document.querySelectorAll('[data-confirm-transfer]').forEach(btn => btn.onclick = () => confirmIncomingTransfer(btn.dataset.confirmTransfer));
+  document.querySelectorAll('[data-problem-transfer]').forEach(btn => btn.onclick = () => markTransferProblem(btn.dataset.problemTransfer));
   $('txForm').onsubmit = submitTransaction;
-  updateSizeOptions(); updateReason(); updateCurrentQty();
+  if (prefillTx?.productId && byId(state.products, prefillTx.productId)) $('txProduct').value = prefillTx.productId;
+  updateSizeOptions();
+  if (prefillTx?.size && [...$('txSize').options].some(o=>Number(o.value)===Number(prefillTx.size))) $('txSize').value = String(prefillTx.size);
+  sessionStorage.removeItem('loveMatcha.prefillTx');
+  updateReason(); updateCurrentQty();
   enhanceNumberInputs($('page-transaction'));
 }
 
@@ -802,12 +890,18 @@ async function submitTransaction(e) {
   let delta = kind === 'add' ? qtyInput : kind === 'remove' ? -qtyInput : qtyInput - current;
   const entries = [];
   entries.push({ branch, productId, size, delta, qtyAfter: current + delta, kind, reason, note, txDate });
-  if (kind === 'remove' && $('txReason').value === 'ส่งให้สาขาอื่น') {
+  const isBranchTransfer = kind === 'remove' && $('txReason').value === 'ส่งให้สาขาอื่น';
+  if (isBranchTransfer) {
     const toBranch = $('transferTo').value;
     if (!toBranch || toBranch === branch) return toast('เลือกสาขาปลายทางให้ถูกต้อง');
-    const targetCurrent = stockQty(toBranch, productId, size);
-    entries[0].transferTo = toBranch;
-    entries.push({ branch: toBranch, productId, size, delta: qtyInput, qtyAfter: targetCurrent + qtyInput, kind:'add', reason:'รับจากสาขาอื่น', note:`รับจาก ${branch} / ${note}`, txDate, transferFrom: branch });
+    const transferId = makeId('transfer');
+    entries[0] = {
+      branch, productId, size, delta, qtyAfter: current + delta, kind:'remove',
+      reason:'ส่งให้สาขาอื่น (รอปลายทางยืนยัน)',
+      note, txDate,
+      transferId, transferFrom: branch, transferTo: toBranch,
+      transferStatus:'pending', confirmRequired:true
+    };
   }
   if (kind === 'add' && $('txReason').value === 'รีแพคชาเพิ่ม' && $('repackDeduct')?.checked) {
     const sourceSize = Number($('repackSourceSize').value);
@@ -818,7 +912,7 @@ async function submitTransaction(e) {
   }
   try {
     await applyStockEntries(entries);
-    toast('บันทึกเรียบร้อย');
+    toast(isBranchTransfer ? 'บันทึกส่งออกแล้ว รอปลายทางยืนยันรับเข้า' : 'บันทึกเรียบร้อย');
     e.target.reset();
     activePage = 'dashboard'; renderApp();
   } catch(err) { console.error(err); toast('บันทึกไม่สำเร็จ'); }
@@ -847,6 +941,66 @@ async function applyStockEntries(entries) {
   }
   await batch.commit();
   maybeBackupAfterTransaction();
+}
+
+async function confirmIncomingTransfer(id) {
+  if (!requireOnlineForWrite()) return;
+  const r = byId(state.history, id);
+  if (!r || r.transferStatus !== 'pending') return toast('ไม่พบรายการรอยืนยัน หรือรายการนี้ยืนยันไปแล้ว');
+  if (!canConfirmTransfer(r)) return toast('เฉพาะสาขาปลายทาง/ผู้จัดการ/เจ้าของเท่านั้นที่ยืนยันรับเข้าได้');
+  const qty = Math.abs(Number(r.delta || 0));
+  if (!qty) return toast('จำนวนโอนไม่ถูกต้อง');
+  if (!confirm(`ยืนยันรับเข้า Stock\nจาก ${r.transferFrom || r.branch} ไป ${r.transferTo}\n${productName(r.productId)} ${r.size}gm จำนวน ${qty.toLocaleString('th-TH')} ใช่หรือไม่?`)) return;
+  const current = stockQty(r.transferTo, r.productId, Number(r.size));
+  const addEntry = {
+    branch: r.transferTo, productId: r.productId, size: Number(r.size), delta: qty, qtyAfter: current + qty,
+    kind:'add', reason:'รับโอนจากสาขาอื่น', note:`ยืนยันรับจาก ${r.transferFrom || r.branch}${r.note ? ' / ' + r.note : ''}`,
+    txDate: todayInput(), transferId: r.transferId || id, transferFrom: r.transferFrom || r.branch, transferTo: r.transferTo, transferStatus:'confirmed'
+  };
+  const userInfo = currentUser ? {userId:currentUser.id, userName:currentUser.name, role:currentUser.role} : {userId:'unknown', userName:'ไม่ระบุ', role:'unknown'};
+  if (useLocal) {
+    const sid = stockDocId(addEntry.branch, addEntry.productId, addEntry.size);
+    let s = state.stock.find(x => x.id === sid);
+    if (!s) { s = {id:sid, branch:addEntry.branch, productId:addEntry.productId, productName:productName(addEntry.productId), size:addEntry.size, qty:0}; state.stock.push(s); }
+    s.qty = Number(s.qty||0) + qty; s.updatedAt = nowIso();
+    state.history = state.history.map(x => x.id === id ? {...x, transferStatus:'confirmed', confirmedAt:nowIso(), confirmedBy:currentUser.id, confirmedByName:currentUser.name} : x);
+    state.history.unshift({id:makeId('hist'), ...addEntry, ...userInfo, productName:productName(addEntry.productId), createdAt:nowIso(), appVersion:APP_VERSION});
+    saveLocalDebounced(); maybeBackupAfterTransaction(); renderApp(); toast('ยืนยันรับเข้า Stock แล้ว'); return;
+  }
+  const batch = db.batch();
+  const sid = stockDocId(addEntry.branch, addEntry.productId, addEntry.size);
+  batch.set(db.collection(`${BASE_PATH}/stock`).doc(sid), {id:sid, branch:addEntry.branch, productId:addEntry.productId, productName:productName(addEntry.productId), size:addEntry.size, qty:firebase.firestore.FieldValue.increment(qty), updatedAt:firebase.firestore.FieldValue.serverTimestamp()}, {merge:true});
+  batch.set(db.collection(`${BASE_PATH}/history`).doc(id), {transferStatus:'confirmed', confirmedAt:firebase.firestore.FieldValue.serverTimestamp(), confirmedBy:currentUser.id, confirmedByName:currentUser.name}, {merge:true});
+  batch.set(db.collection(`${BASE_PATH}/history`).doc(makeId('hist')), {...addEntry, ...userInfo, productName:productName(addEntry.productId), createdAt:firebase.firestore.FieldValue.serverTimestamp(), appVersion:APP_VERSION});
+  await batch.commit();
+  maybeBackupAfterTransaction();
+  toast('ยืนยันรับเข้า Stock แล้ว');
+}
+
+async function markTransferProblem(id) {
+  if (!requireOnlineForWrite()) return;
+  const r = byId(state.history, id);
+  if (!r || r.transferStatus !== 'pending') return toast('ไม่พบรายการรอยืนยัน');
+  if (!canConfirmTransfer(r)) return toast('เฉพาะสาขาปลายทาง/ผู้จัดการ/เจ้าของเท่านั้น');
+  const problemNote = prompt('ระบุปัญหาที่พบ เช่น จำนวนไม่ตรง / ชนิดชาไม่ตรง');
+  if (problemNote === null) return;
+  const userInfo = currentUser ? {userId:currentUser.id, userName:currentUser.name, role:currentUser.role} : {userId:'unknown', userName:'ไม่ระบุ', role:'unknown'};
+  const problemEntry = {
+    branch: r.transferTo, productId: r.productId, size: Number(r.size), delta:0, qtyAfter: stockQty(r.transferTo, r.productId, Number(r.size)),
+    kind:'transferProblem', reason:'ปลายทางแจ้งว่าส่งไม่ตรง', note:problemNote.trim() || 'ไม่ตรง',
+    txDate: todayInput(), transferId: r.transferId || id, transferFrom: r.transferFrom || r.branch, transferTo: r.transferTo, transferStatus:'problem'
+  };
+  if (useLocal) {
+    state.history = state.history.map(x => x.id === id ? {...x, transferStatus:'problem', problemAt:nowIso(), problemBy:currentUser.id, problemByName:currentUser.name, problemNote:problemEntry.note} : x);
+    state.history.unshift({id:makeId('hist'), ...problemEntry, ...userInfo, productName:productName(problemEntry.productId), createdAt:nowIso(), appVersion:APP_VERSION});
+    saveLocalDebounced(); maybeBackupAfterTransaction(); renderApp(); toast('บันทึกปัญหาแล้ว ยังไม่บวกเข้า Stock ปลายทาง'); return;
+  }
+  const batch = db.batch();
+  batch.set(db.collection(`${BASE_PATH}/history`).doc(id), {transferStatus:'problem', problemAt:firebase.firestore.FieldValue.serverTimestamp(), problemBy:currentUser.id, problemByName:currentUser.name, problemNote:problemEntry.note}, {merge:true});
+  batch.set(db.collection(`${BASE_PATH}/history`).doc(makeId('hist')), {...problemEntry, ...userInfo, productName:productName(problemEntry.productId), createdAt:firebase.firestore.FieldValue.serverTimestamp(), appVersion:APP_VERSION});
+  await batch.commit();
+  maybeBackupAfterTransaction();
+  toast('บันทึกปัญหาแล้ว ยังไม่บวกเข้า Stock ปลายทาง');
 }
 
 
@@ -1008,6 +1162,9 @@ function historyRowsForExport() {
     จำนวนในระบบก่อนเช็ค: r.systemQty ?? '',
     จำนวนที่นับจริง: r.countedQty ?? '',
     ผลต่างเช็คจริง: r.auditVariance ?? '',
+    สถานะโอนสาขา: r.transferStatus || '',
+    จากสาขา: r.transferFrom || '',
+    ไปสาขา: r.transferTo || '',
     หมายเหตุ: r.note || ''
   }));
 }
@@ -1015,7 +1172,8 @@ function renderHistoryList() {
   const rows = historyRowsForDisplay().slice(0,300);
   const el = $('historyList'); if(!el) return;
   const auditCell = (r) => r.countedQty !== undefined ? `ระบบ ${Number(r.systemQty ?? 0).toLocaleString('th-TH')} / จริง ${Number(r.countedQty ?? 0).toLocaleString('th-TH')} / ${Number(r.auditVariance||0)===0?'ตรง':Number(r.auditVariance)>0?'เกิน +'+Number(r.auditVariance).toLocaleString('th-TH'):'ขาด '+Number(r.auditVariance).toLocaleString('th-TH')}` : '-';
-  el.innerHTML = `<div class="table-wrap"><table><thead><tr><th>วันที่บันทึก</th><th>วันที่ทำรายการ</th><th>ผู้ทำ</th><th>สาขา</th><th>รายการ</th><th class="right">เข้า/ออก</th><th>เหตุผล</th><th>ผลเช็คจริง</th><th>หมายเหตุ</th>${canOwner()?'<th>ซ่อน/แสดง</th>':''}</tr></thead><tbody>${rows.map(r => { const hidden = !!r.hiddenOwnerOnly; return `<tr class="${hidden?'history-hidden-owner':''}"><td>${moneyDate(dateFromFirestore(r.createdAt))}${hidden?'<div class="small danger-text hidden-label">ซ่อนอยู่: เห็นเฉพาะเจ้าของ</div>':''}</td><td>${dateOnlyBE(r.txDate)}</td><td>${safe(r.userName||'-')}</td><td>${safe(r.branch||'-')}</td><td>${safe(r.productName||productName(r.productId))} ${safe(r.size||'')}gm</td><td class="right ${Number(r.delta)<0?'danger-text':Number(r.delta)>0?'ok-text':'muted'}">${Number(r.delta||0)>0?'+':''}${Number(r.delta||0).toLocaleString('th-TH')}</td><td>${safe(r.reason||r.kind||'-')}</td><td>${safe(auditCell(r))}</td><td>${safe(r.note||'')}</td>${canOwner()?`<td><button class="btn ${hidden?'':'danger'}" data-history-hide="${r.id}">${hidden?'แสดงรายการนี้':'ซ่อนรายการนี้'}</button></td>`:''}</tr>`; }).join('')}</tbody></table></div>`;
+  const transferBadge = (r) => r.transferStatus ? `<div class="small ${r.transferStatus==='problem'?'danger-text':r.transferStatus==='confirmed'?'ok-text':'warn-text'}">โอนสาขา: ${r.transferStatus==='pending'?'รอยืนยัน':r.transferStatus==='confirmed'?'ยืนยันแล้ว':'มีปัญหา'}</div>` : '';
+  el.innerHTML = `<div class="table-wrap"><table><thead><tr><th>วันที่บันทึก</th><th>วันที่ทำรายการ</th><th>ผู้ทำ</th><th>สาขา</th><th>รายการ</th><th class="right">เข้า/ออก</th><th>เหตุผล</th><th>ผลเช็คจริง</th><th>หมายเหตุ</th>${canOwner()?'<th>ซ่อน/แสดง</th>':''}</tr></thead><tbody>${rows.map(r => { const hidden = !!r.hiddenOwnerOnly; return `<tr class="${hidden?'history-hidden-owner':''}"><td>${moneyDate(dateFromFirestore(r.createdAt))}${hidden?'<div class="small danger-text hidden-label">ซ่อนอยู่: เห็นเฉพาะเจ้าของ</div>':''}</td><td>${dateOnlyBE(r.txDate)}</td><td>${safe(r.userName||'-')}</td><td>${safe(r.branch||'-')}</td><td>${safe(r.productName||productName(r.productId))} ${safe(r.size||'')}gm</td><td class="right ${Number(r.delta)<0?'danger-text':Number(r.delta)>0?'ok-text':'muted'}">${Number(r.delta||0)>0?'+':''}${Number(r.delta||0).toLocaleString('th-TH')}</td><td>${safe(r.reason||r.kind||'-')}${transferBadge(r)}</td><td>${safe(auditCell(r))}</td><td>${safe(r.note||'')}${r.transferFrom||r.transferTo?`<div class="small muted">${safe(r.transferFrom||r.branch||'-')} → ${safe(r.transferTo||'-')}</div>`:''}</td>${canOwner()?`<td><button class="btn ${hidden?'':'danger'}" data-history-hide="${r.id}">${hidden?'แสดงรายการนี้':'ซ่อนรายการนี้'}</button></td>`:''}</tr>`; }).join('')}</tbody></table></div>`;
   if (canOwner()) document.querySelectorAll('[data-history-hide]').forEach(btn => btn.onclick = () => toggleHistoryItemVisibility(btn.dataset.historyHide));
 }
 async function toggleHistoryItemVisibility(id) {
@@ -1245,13 +1403,27 @@ function renderBackup() {
   $('page-backup').innerHTML = `
     <div class="card">
       <h1>สำรองข้อมูล</h1>
-      <p class="muted">ดาวน์โหลดไฟล์สำรองเก็บไว้ได้ และตั้งค่าให้ส่งเข้า Google Drive ผ่าน Apps Script ได้</p>
+      <p class="muted">ดาวน์โหลดไฟล์สำรองเก็บไว้ได้ ตั้งค่าให้ส่งเข้า Google Drive ผ่าน Apps Script และ Restore กลับจากไฟล์ JSON ได้</p>
       <div class="grid grid-3">
         <button id="downloadJsonBtn" class="btn">ดาวน์โหลด Backup JSON</button>
         <button id="downloadCsvBtn" class="btn secondary">ดาวน์โหลด Stock CSV</button>
         <button id="sendDriveBtn" class="btn ghost">ส่ง Backup ไป Google Drive</button>
       </div>
       <div class="notice" style="margin-top:12px">Auto Backup ไป Google Drive จะทำงานเมื่อมีเครื่องเปิดหน้าเว็บนี้อยู่เท่านั้น ถ้าปิดทุกเครื่อง ระบบเว็บ static จะไม่มีตัวรันอัตโนมัติ</div>
+    </div>
+    <div class="card">
+      <h2>Restore Backup JSON</h2>
+      <p class="muted">เฉพาะเจ้าของเท่านั้น ก่อน Restore ต้องกรอก PIN ของตัวเองยืนยัน ระบบจะเขียนทับข้อมูลผู้ใช้ รายการชา Stock ประวัติ และตั้งค่า จากไฟล์ JSON ที่เลือก</p>
+      <div class="grid grid-2">
+        <div class="field"><label>เลือกไฟล์ Backup .json</label><input id="restoreJsonFile" type="file" accept=".json,application/json"></div>
+        <div class="field"><label>&nbsp;</label><button id="restoreJsonBtn" class="btn danger">Restore จาก JSON</button></div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>อัปเดต Stock จาก Excel v1.1 ที่แนบมา</h2>
+      <p class="muted">ปุ่มนี้จะนำรายการชา/ขนาด/จำนวนคงเหลือจากไฟล์ Excel ที่ฝังในเวอร์ชัน v1.1 ไปเขียนทับ Stock ปัจจุบันใน Firebase เหมาะสำหรับหลังอัปโหลดไฟล์นี้ครั้งแรก</p>
+      <div class="notice">ต้องใช้ไอดีเจ้าของและกรอก PIN ยืนยันก่อน ระบบจะไม่ลบผู้ใช้หรือประวัติเดิม แต่จะตั้งค่ารายการชาและจำนวน Stock ตาม Excel</div>
+      <div class="btn-row" style="margin-top:12px"><button id="importTemplateStockBtn" class="btn warn">นำเข้า Stock จาก Excel v1.1</button></div>
     </div>
     <div class="card">
       <h2>ตั้งค่า Google Drive Auto Backup</h2>
@@ -1266,13 +1438,93 @@ function renderBackup() {
   $('downloadJsonBtn').onclick=downloadBackupJson;
   $('downloadCsvBtn').onclick=()=>downloadCsv('love-matcha-stock.csv', stockRows());
   $('sendDriveBtn').onclick=sendDriveBackup;
+  $('restoreJsonBtn').onclick=restoreBackupJson;
+  $('importTemplateStockBtn').onclick=importEmbeddedStockTemplate;
   $('saveBackupSettingsBtn').onclick=saveBackupSettings;
   $('autoBackupMode').value = backupMode();
   const toggleMinutes = () => $('intervalMinutesBox').classList.toggle('hidden', !['interval','both'].includes($('autoBackupMode').value));
   $('autoBackupMode').onchange = toggleMinutes; toggleMinutes();
+  enhanceNumberInputs($('page-backup'));
 }
 function buildBackup() { return { appVersion: APP_VERSION, exportedAt: nowIso(), settings: state.settings, users: state.users, products: state.products, stock: state.stock, history: state.history }; }
 function downloadBackupJson() { downloadFile('love-matcha-backup-'+todayInput()+'.json', JSON.stringify(buildBackup(), null, 2), 'application/json'); }
+
+function askSelfPin(message='กรอก PIN ของคุณเองเพื่อยืนยัน') {
+  const pin = prompt(message);
+  if (pin === null) return false;
+  if (String(pin) !== String(currentUser?.pin || '')) { toast('PIN ของคุณไม่ถูกต้อง'); return false; }
+  return true;
+}
+function normalizeBackupData(data) {
+  if (!data || typeof data !== 'object') throw new Error('ไฟล์ JSON ไม่ถูกต้อง');
+  const users = Array.isArray(data.users) ? data.users.filter(x=>x && x.id) : [];
+  const products = Array.isArray(data.products) ? data.products.filter(x=>x && x.id) : [];
+  const stock = Array.isArray(data.stock) ? data.stock.filter(x=>x && x.id) : [];
+  const history = Array.isArray(data.history) ? data.history.filter(x=>x) : [];
+  if (!users.length || !products.length || !stock.length) throw new Error('ไฟล์ Backup ต้องมี users, products และ stock');
+  const settings = {...defaultSettings(), ...(data.settings || {}), id:'main', initialized:true, restoredAt:nowIso(), restoredFromAppVersion:data.appVersion || ''};
+  return {users, products, stock, history, settings};
+}
+async function commitFirestoreOps(ops) {
+  let batch = db.batch();
+  let count = 0;
+  for (const op of ops) {
+    if (op.type === 'delete') batch.delete(op.ref);
+    else batch.set(op.ref, op.data, op.options || {});
+    count++;
+    if (count >= 450) { await batch.commit(); batch = db.batch(); count = 0; }
+  }
+  if (count) await batch.commit();
+}
+async function restoreBackupJson() {
+  if (!canOwner()) return toast('Restore ทำได้เฉพาะเจ้าของเท่านั้น');
+  if (!requireOnlineForWrite()) return;
+  const file = $('restoreJsonFile')?.files?.[0];
+  if (!file) return toast('เลือกไฟล์ Backup JSON ก่อน');
+  if (!askSelfPin('ยืนยัน Restore ข้อมูลทั้งหมด\nกรอก PIN ของคุณเอง 4 ตัว')) return;
+  if (!confirm('Restore จะเขียนทับข้อมูลในระบบจากไฟล์ JSON นี้จริงหรือไม่?')) return;
+  try {
+    const data = normalizeBackupData(JSON.parse(await file.text()));
+    if (useLocal) {
+      state = {...state, ...data, loaded:true};
+      saveLocalNow(); renderApp(); toast('Restore จาก JSON แล้ว'); return;
+    }
+    const collections = ['users','products','stock','history'];
+    const ops = [];
+    for (const name of collections) {
+      const snap = await db.collection(`${BASE_PATH}/${name}`).get();
+      snap.docs.forEach(doc => ops.push({type:'delete', ref: doc.ref}));
+    }
+    ops.push({type:'set', ref: db.collection(`${BASE_PATH}/settings`).doc('main'), data: {...data.settings, updatedAt: firebase.firestore.FieldValue.serverTimestamp()}, options:{merge:false}});
+    data.users.forEach(u => ops.push({type:'set', ref: db.collection(`${BASE_PATH}/users`).doc(u.id), data:u, options:{merge:false}}));
+    data.products.forEach(p => ops.push({type:'set', ref: db.collection(`${BASE_PATH}/products`).doc(p.id), data:{...p, sizes:sizesForProduct(p), alerts:alertsForProduct(p)}, options:{merge:false}}));
+    data.stock.forEach(s => ops.push({type:'set', ref: db.collection(`${BASE_PATH}/stock`).doc(s.id || stockDocId(s.branch, s.productId, s.size)), data:{...s, qty:Number(s.qty||0), size:Number(s.size||0)}, options:{merge:false}}));
+    data.history.forEach(h => { const hid = h.id || makeId('hist'); ops.push({type:'set', ref: db.collection(`${BASE_PATH}/history`).doc(hid), data:{...h, id:hid}, options:{merge:false}}); });
+    await commitFirestoreOps(ops);
+    toast('Restore จาก JSON แล้ว');
+  } catch(err) {
+    console.error(err);
+    toast(err.message || 'Restore ไม่สำเร็จ');
+  }
+}
+async function importEmbeddedStockTemplate() {
+  if (!canOwner()) return toast('นำเข้า Stock จาก Excel ทำได้เฉพาะเจ้าของ');
+  if (!requireOnlineForWrite()) return;
+  if (!askSelfPin('ยืนยันนำเข้า Stock จาก Excel v1.1\nกรอก PIN ของคุณเอง 4 ตัว')) return;
+  if (!confirm('ระบบจะตั้งค่ารายการชา/ขนาด/จำนวน Stock ตาม Excel v1.1 และเขียนทับจำนวน Stock ปัจจุบันของรายการเหล่านี้ จริงหรือไม่?')) return;
+  try {
+    const products = stockTemplateProducts();
+    const stock = stockTemplateDocs(products, branches());
+    const ops = [];
+    products.forEach(p => ops.push({type:'set', ref: db.collection(`${BASE_PATH}/products`).doc(p.id), data:{...p, updatedAt: firebase.firestore.FieldValue.serverTimestamp()}, options:{merge:true}}));
+    stock.forEach(s => ops.push({type:'set', ref: db.collection(`${BASE_PATH}/stock`).doc(s.id), data:{...s, updatedAt: firebase.firestore.FieldValue.serverTimestamp()}, options:{merge:true}}));
+    ops.push({type:'set', ref: db.collection(`${BASE_PATH}/settings`).doc('main'), data:{stockTemplateVersion:STOCK_TEMPLATE_VERSION, updatedAt: firebase.firestore.FieldValue.serverTimestamp()}, options:{merge:true}});
+    ops.push({type:'set', ref: db.collection(`${BASE_PATH}/history`).doc(makeId('hist')), data:{type:'stockTemplateImport', reason:'นำเข้า Stock จาก Excel v1.1', note:STOCK_TEMPLATE_VERSION, userId:currentUser.id, userName:currentUser.name, role:currentUser.role, branch:'ทุกสาขา', txDate:todayInput(), createdAt:firebase.firestore.FieldValue.serverTimestamp(), appVersion:APP_VERSION}, options:{merge:false}});
+    await commitFirestoreOps(ops);
+    toast('นำเข้า Stock จาก Excel v1.1 แล้ว');
+  } catch(err) { console.error(err); toast('นำเข้า Stock จาก Excel ไม่สำเร็จ'); }
+}
+
 function stockRows() { return state.stock.map(s=>({branch:s.branch, product:s.productName||productName(s.productId), size:s.size, qty:s.qty, updatedAt:dateFromFirestore(s.updatedAt)})); }
 function downloadFile(filename, content, type='text/plain') { const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([content],{type})); a.download=filename; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),1000); }
 function downloadCsv(filename, rows) {
